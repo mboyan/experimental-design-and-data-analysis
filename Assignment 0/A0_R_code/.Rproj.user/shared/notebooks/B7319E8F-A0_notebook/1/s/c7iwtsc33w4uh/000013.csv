@@ -1,0 +1,13 @@
+"0","mean_a = mean(sample_a)"
+"0","mean_b = mean(sample_b)"
+"0","sd_a = sd(sample_a)"
+"0","sd_b = sd(sample_b)"
+"0","df <- data.frame(mean=c(mean_a, mean_b),sd=c(sd_a, sd_b))"
+"0","tab <- table(df$rows, df$cols)"
+"0","tab"
+"1","< table of extent"
+"1"," "
+"1","0 x 0"
+"1"," "
+"1",">
+"

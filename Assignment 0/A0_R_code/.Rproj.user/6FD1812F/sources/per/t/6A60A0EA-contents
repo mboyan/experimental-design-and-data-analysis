@@ -1,0 +1,47 @@
+---
+title: "Assignment 0"
+output: html_notebook
+---
+
+## Exercise 1
+
+a) The first step is to generate two samples from a standard normal distribution - one with size 100 and one with size 1000000. These will be compared as histograms and QQ-plots and their respective mean and standard deviation will be computed
+
+```{r}
+# Generate samples
+sample_a = rnorm(100)
+sample_b = rnorm(1000000)
+
+# Plots
+par(mfrow=c(2,2))
+hist(sample_a)
+hist(sample_b)
+qqnorm(sample_a)
+qqnorm(sample_b)
+```
+
+
+```{r}
+mean_a = mean(sample_a)
+mean_b = mean(sample_b)
+sd_a = sd(sample_a)
+sd_b = sd(sample_b)
+df <- data.frame(mean=c(mean_a, mean_b),sd=c(sd_a, sd_b))
+tab <- table(df, df)
+tab
+```
+
+It is evident that the mean and standard deviation of the larger sample are closer to the true mean and standard deviation of the standard normal distribution, i.e. a higher statistical accuracy is achieved.
+
+b) The probabilities for three example cases are computed for the standard normal distribution:
+
+```{r}
+print("Probabiliy that an arbitrary outcome is smaller than 2:")
+pnorm(2)
+
+print("Probabiliy that an arbitrary outcome is larger than -0.5:")
+pnorm(-0.5, lower.tail = FALSE)
+
+print("Probabiliy that an arbitrary outcome is between -1 and 2:")
+pnorm(2) - pnorm(-1)
+```
