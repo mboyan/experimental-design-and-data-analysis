@@ -1,7 +1,0 @@
-"0","# Generate samples"
-"0","sample_a = rnorm(100)"
-"0","sample_b = rnorm(1000000)"
-"0",""
-"0","# Plots"
-"0","par(mfrow=c(2,2))"
-"0","hist(sample_a)"
