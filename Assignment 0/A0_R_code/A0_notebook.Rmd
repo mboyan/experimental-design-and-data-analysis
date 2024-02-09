@@ -165,3 +165,27 @@ The data can be qualitatively examined for possible correlations between the bir
 ```{r}
 plot(data_birth, data_mort)
 ```
+
+## Exercise 4
+
+a) For this exercise, $2\times 1000$ test samples of size m and n are generated from a normal distribution and a two-sample t-test is performed on each sample pair. In this initial experiment, the means and standard deviations of the two sample distribution are identical.
+```{r}
+B = 1000
+m = n = 30
+mu = nu = 180
+sd = 10
+
+p_vals = numeric(B)
+
+for(b in 1:B){
+  x = rnorm(n, mu, sd)
+  y = rnorm(n, nu, sd)
+  p_vals[b] = t.test(x, y, var.equal = TRUE)[[3]]
+}
+
+fract_a = sum(p_vals[p_vals < 0.05]) / length(p_vals)
+fract_b = sum(p_vals[p_vals < 0.1]) / length(p_vals)
+
+print(paste("Fraction of p-values smaller than 5%", fract_a))
+print(paste("Fraction of p-values smaller than 10%", fract_b))
+```

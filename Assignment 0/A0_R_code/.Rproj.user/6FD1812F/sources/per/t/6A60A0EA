@@ -1,9 +1,9 @@
 {
     "id": "6A60A0EA",
-    "path": "D:/MSc Computational Science/S02_P01/Assignment 0/A0_R_code/A0_notebook.Rmd",
+    "path": "D:/GitHub/experimental-design-and-data-analysis/Assignment 0/A0_R_code/A0_notebook.Rmd",
     "project_path": "A0_notebook.Rmd",
     "type": "r_markdown",
-    "hash": "1558927716",
+    "hash": "2869168301",
     "contents": "",
     "dirty": false,
     "created": 1707310920967.0,
@@ -14,15 +14,15 @@
         "chunk_output_type": "inline",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "29,15",
-        "scrollLine": "21"
+        "cursorPosition": "189,0",
+        "scrollLine": "170"
     },
     "folds": "",
-    "lastKnownWriteTime": 1707313172,
+    "lastKnownWriteTime": 1707488461,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1707313172261,
+    "last_content_update": 1707488461623,
     "read_only": false,
     "read_only_alternatives": []
 }
