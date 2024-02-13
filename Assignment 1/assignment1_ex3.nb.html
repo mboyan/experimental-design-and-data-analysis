@@ -1754,15 +1754,81 @@ display: none;
 <!-- rnb-text-begin -->
 <div id="sour-cream" class="section level2">
 <h2>Sour Cream</h2>
+<div id="a" class="section level3">
+<h3>a)</h3>
+<p>Analyze the data in a three-way experiment without interactions with
+acidity as response and starter, batch and position as factors. By using
+summary command, can you tell whether there is a significant difference
+between the effects of starter 1 and starter 2 on acidity? Motivate your
+answer.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSA8LSByZWFkLmNzdihcImRhdGEvY3JlYW0udHh0XCIsIHNlcD1cIlwiLCBoZWFkZXI9VFJVRSlcbmBgYCJ9 -->
-<pre class="r"><code>data &lt;- read.csv(&quot;data/cream.txt&quot;, sep=&quot;&quot;, header=TRUE)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSA8LSByZWFkLmNzdihcImRhdGEvY3JlYW0udHh0XCIsIHNlcD1cIlwiLCBoZWFkZXI9VFJVRSlcbnN1bW1hcnkoZGF0YSlcbmBgYCJ9 -->
+<pre class="r"><code>data &lt;- read.csv(&quot;data/cream.txt&quot;, sep=&quot;&quot;, header=TRUE)
+summary(data)</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgIGFjaWRpdHkgICAgICAgICAgIGJhdGNoICAgICAgcG9zaXRpb24gICAgc3RhcnRlciBcbiBNaW4uICAgOiA1LjM0MCAgIE1pbi4gICA6MSAgIE1pbi4gICA6MSAgIE1pbi4gICA6MSAgXG4gMXN0IFF1LjogNy45MjAgICAxc3QgUXUuOjIgICAxc3QgUXUuOjIgICAxc3QgUXUuOjIgIFxuIE1lZGlhbiA6IDguMTIwICAgTWVkaWFuIDozICAgTWVkaWFuIDozICAgTWVkaWFuIDozICBcbiBNZWFuICAgOiA4LjY2MyAgIE1lYW4gICA6MyAgIE1lYW4gICA6MyAgIE1lYW4gICA6MyAgXG4gM3JkIFF1LjogOS41ODAgICAzcmQgUXUuOjQgICAzcmQgUXUuOjQgICAzcmQgUXUuOjQgIFxuIE1heC4gICA6MTIuMDAwICAgTWF4LiAgIDo1ICAgTWF4LiAgIDo1ICAgTWF4LiAgIDo1ICBcbiJ9 -->
+<pre><code>    acidity           batch      position    starter 
+ Min.   : 5.340   Min.   :1   Min.   :1   Min.   :1  
+ 1st Qu.: 7.920   1st Qu.:2   1st Qu.:2   1st Qu.:2  
+ Median : 8.120   Median :3   Median :3   Median :3  
+ Mean   : 8.663   Mean   :3   Mean   :3   Mean   :3  
+ 3rd Qu.: 9.580   3rd Qu.:4   3rd Qu.:4   3rd Qu.:4  
+ Max.   :12.000   Max.   :5   Max.   :5   Max.   :5  </code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="b" class="section level3">
+<h3>b)</h3>
+<p>Recall that the main interest is in the effect of starter on acidity;
+factors position and batch represent the block variables. Remove
+insignificant block variable(s) if there are such, and perform an ANOVA
+for the resulting “fixed effects” model. Which starter(s) lead to
+significantly different acidity? Motivate your answer.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="c" class="section level3">
+<h3>c)</h3>
+<p>For the resulting model from c), can we also apply the Friedman test
+to test whether there is an effect of starter on acidity?</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZnJpZWRtYW4udGVzdChkYXRhKVxuYGBgIn0= -->
+<pre class="r"><code>friedman.test(data)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZnJpZWRtYW4udGVzdC5kZWZhdWx0KGRhdGEpIDogXG4gIGFyZ3VtZW50IFwiZ3JvdXBzXCIgaXMgbWlzc2luZywgd2l0aCBubyBkZWZhdWx0XG4ifQ== -->
+<pre><code>Error in friedman.test.default(data) : 
+  argument &quot;groups&quot; is missing, with no default</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="d" class="section level3">
+<h3>d)</h3>
+<p>Repeat c) by performing a mixed effects analysis, modeling the block
+variable(s) (if there are any) as a random effect by using the function
+lmer. (You will need to install the R-package lme4, which is not
+included in the standard distribution of R.) Compare your results to the
+results found by using the fixed effects model in c). Comment.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG1lcihkYXRhKSAjP1xuYGBgIn0= -->
+<pre class="r"><code>lmer(data) #?</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZXZhbChwcmVkdmFycywgZGF0YSwgZW52KSA6IG9iamVjdCAnYWNpZGl0eScgbm90IGZvdW5kXG4ifQ== -->
+<pre><code>Error in eval(predvars, data, env) : object &#39;acidity&#39; not found</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+</div>
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKIyMgU291ciBDcmVhbQoKYGBge3J9CmRhdGEgPC0gcmVhZC5jc3YoImRhdGEvY3JlYW0udHh0Iiwgc2VwPSIiLCBoZWFkZXI9VFJVRSkKYGBgCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKIyMgU291ciBDcmVhbQoKIyMjIGEpCgpBbmFseXplIHRoZSBkYXRhIGluIGEgdGhyZWUtd2F5IGV4cGVyaW1lbnQgd2l0aG91dCBpbnRlcmFjdGlvbnMgd2l0aCBhY2lkaXR5IGFzIHJlc3BvbnNlIGFuZCBzdGFydGVyLCBiYXRjaCBhbmQgcG9zaXRpb24gYXMgZmFjdG9ycy4gQnkgdXNpbmcgc3VtbWFyeSBjb21tYW5kLCBjYW4geW91IHRlbGwgd2hldGhlciB0aGVyZSBpcyBhIHNpZ25pZmljYW50IGRpZmZlcmVuY2UgYmV0d2VlbiB0aGUgZWZmZWN0cyBvZiBzdGFydGVyIDEgYW5kIHN0YXJ0ZXIgMiBvbiBhY2lkaXR5PyBNb3RpdmF0ZSB5b3VyIGFuc3dlci4KCmBgYHtyfQpkYXRhIDwtIHJlYWQuY3N2KCJkYXRhL2NyZWFtLnR4dCIsIHNlcD0iIiwgaGVhZGVyPVRSVUUpCnN1bW1hcnkoZGF0YSkKYGBgCgojIyMgYikKClJlY2FsbCB0aGF0IHRoZSBtYWluIGludGVyZXN0IGlzIGluIHRoZSBlZmZlY3Qgb2Ygc3RhcnRlciBvbiBhY2lkaXR5OyBmYWN0b3JzIHBvc2l0aW9uIGFuZCBiYXRjaCByZXByZXNlbnQgdGhlIGJsb2NrIHZhcmlhYmxlcy4gUmVtb3ZlIGluc2lnbmlmaWNhbnQgYmxvY2sgdmFyaWFibGUocykgaWYgdGhlcmUgYXJlIHN1Y2gsIGFuZCBwZXJmb3JtIGFuIEFOT1ZBIGZvciB0aGUgcmVzdWx0aW5nIOKAnGZpeGVkIGVmZmVjdHPigJ0gbW9kZWwuIFdoaWNoIHN0YXJ0ZXIocykgbGVhZCB0byBzaWduaWZpY2FudGx5IGRpZmZlcmVudCBhY2lkaXR5PyBNb3RpdmF0ZSB5b3VyIGFuc3dlci4KCmBgYHtyfQoKYGBgCgojIyMgYykKCkZvciB0aGUgcmVzdWx0aW5nIG1vZGVsIGZyb20gYyksIGNhbiB3ZSBhbHNvIGFwcGx5IHRoZSBGcmllZG1hbiB0ZXN0IHRvIHRlc3Qgd2hldGhlciB0aGVyZSBpcyBhbiBlZmZlY3Qgb2Ygc3RhcnRlciBvbiBhY2lkaXR5PwoKYGBge3J9CmZyaWVkbWFuLnRlc3QoZGF0YSkgIz8KYGBgCgojIyMgZCkKClJlcGVhdCBjKSBieSBwZXJmb3JtaW5nIGEgbWl4ZWQgZWZmZWN0cyBhbmFseXNpcywgbW9kZWxpbmcgdGhlIGJsb2NrIHZhcmlhYmxlKHMpIChpZiB0aGVyZSBhcmUgYW55KSBhcyBhIHJhbmRvbSBlZmZlY3QgYnkgdXNpbmcgdGhlIGZ1bmN0aW9uIGxtZXIuIChZb3Ugd2lsbCBuZWVkIHRvIGluc3RhbGwgdGhlIFItcGFja2FnZSBsbWU0LCB3aGljaCBpcyBub3QgaW5jbHVkZWQgaW4gdGhlIHN0YW5kYXJkIGRpc3RyaWJ1dGlvbiBvZiBSLikgQ29tcGFyZSB5b3VyIHJlc3VsdHMgdG8gdGhlIHJlc3VsdHMgZm91bmQgYnkgdXNpbmcgdGhlIGZpeGVkIGVmZmVjdHMgbW9kZWwgaW4gYykuIENvbW1lbnQuCgpgYGB7cn0KbG1lcihkYXRhKSAjPwpgYGAKCgo=</div>
 
 
 
