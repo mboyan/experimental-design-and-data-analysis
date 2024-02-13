@@ -1,0 +1,10 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Sour Cream
+
+```{r}
+data <- read.csv("data/cream.txt", sep="", header=TRUE)
+```
