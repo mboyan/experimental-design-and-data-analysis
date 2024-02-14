@@ -5,6 +5,17 @@ output: html_notebook
 
 ## Hemoglobin in trout
 
+In this exercise, the influence of varying amounts of antibacterial sulfamerazine on the hemoglobin levels in the blood of brown trout is explored. The statistical analysis is performed on the data set `hemoglobin.txt`, which is examined below.
+
+```{r}
+hg_data = read.table("data/hemoglobin.txt", header=TRUE)
+head(hg_data)
+summary(hg_data)
+```
+
+The set consists of 80 entries. As can be read from the data, the administering of the treatment is conducted using two different methods, A and B, and in four types of doses, labeled 1, 2, 3 and 4 and corresponding to 0, 5, 10 and 15 g of the drug. The rate (dose) and method comprise the factors which will be analysed.
+
+a) In preparation for a two-way ANOVA, a random assignment of 80 fishes to each combination of factor levels is performed. 
 ```{r}
 
 ```
