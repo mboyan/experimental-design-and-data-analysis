@@ -13,9 +13,14 @@ head(hg_data)
 summary(hg_data)
 ```
 
-The set consists of 80 entries. As can be read from the data, the administering of the treatment is conducted using two different methods, A and B, and in four types of doses, labeled 1, 2, 3 and 4 and corresponding to 0, 5, 10 and 15 g of the drug. The rate (dose) and method comprise the factors which will be analysed.
-
-a) In preparation for a two-way ANOVA, a random assignment of 80 fishes to each combination of factor levels is performed. 
+The set consists of 80 entries. As can be read from the data, the administering of the treatment is conducted using two different methods, A and B, and in four types of doses, labeled 1, 2, 3 and 4 and corresponding to 0, 5, 10 and 15 g of the drug. The rate (dose) and method comprise the factors which will be analysed, and should therefore be transformed into factor datatypes.
 ```{r}
+hg_data$rate = as.factor(hg_data$rate)
+hg_data$method = as.factor(hg_data$method)
+```
 
+a) A two-way ANOVA test on the two factors would include a random assignment of $N=80$ fishes to each combination of factor levels. With a sample size $N=80$, a number of levels for the rate factor $I=4$ and a number of levels for the method factor $J=2$, this random assignment can be demonstrated by the following code. As the original data set also contains 80 entries, the hemoglobin levels can be used as an exemplary numerical outcome, with any potential entry ordering randomized by the `sample()` function.
+```{r}
+N=80; I=4; J=2
+combinations=rbind(rep(1:I,each=N*J), rep(1:J,each=N*I), sample(hg_data$hemoglobin))
 ```
