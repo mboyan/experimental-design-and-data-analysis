@@ -11,24 +11,64 @@ Analyze the data in a three-way experiment without interactions with acidity as 
 
 ```{r}
 data <- read.csv("data/cream.txt", sep="", header=TRUE)
-summary(data)
+cream_treatment <- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
+
+creamaov_treatment <- lm(acidity ~ batch + position + starter, data=cream_treatment)
+anova(creamaov_treatment)
+summary(creamaov_treatment)
 ```
+
+```{r}
+cream_sum <- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
+contrasts(cream_sum$batch) <- contr.sum
+contrasts(cream_sum$position) <- contr.sum
+contrasts(cream_sum$starter) <- contr.sum
+
+creamaov_sum <- lm(acidity ~ batch + position + starter, data=cream_sum)
+anova(creamaov_sum)
+summary(creamaov_sum)
+```
+
+We perform a three-way ANOVA using treatment paramterization. We look at the coefficients to determine the significance of the means of our baseline scenario representing **starter1** and the level **starter2** sharing the same mean. As the p-value is *0.7538*, we presume that there is no significant difference between the effect of the two starters on acidity.
 
 ### b)
 
 Recall that the main interest is in the effect of starter on acidity; factors position and batch represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting “fixed effects” model. Which starter(s) lead to significantly different acidity? Motivate your answer.
 
 ```{r}
-
+creamaov_fixed_sum <- lm(acidity ~ starter + batch, data=cream_sum)
+anova(creamaov_fixed_sum)
+summary(creamaov_fixed_sum)
 ```
+
+Looking at the sum parameterization ANOVA table of a), we find that the p-value for the factor *position* is `0.411191` and all individual levels have a p-value larger than `0.05` stating their lack of significance for the model. We can therefore remove the block variable *position* from the model. As the *batch* variable has a factor p-value of `0.001632` we can conclude that it is significant for the model and should be kept in our fixed effects model, further substantiated by a particularly relevant instance of **batch2** with p-value `0.000368`. The fixed effects model formula therefore becomes `acidity ~ starter + batch` ignoring interactions.
+
+In this model, we find that **starter3** and **starter4** have a very significant effect on acidity with p-values below `0.001`.
+
+# *TODO: What about starter5 in the sum paramterization model? What are we comparing here again? Double-check this makes sense.*
+
+```{r}
+creamaov_sum_auto <- step(creamaov_sum)
+anova(creamaov_sum_auto)
+summary(creamaov_sum_auto)
+```
+
+The step function utility further substantiates our previous results by also removing the insignificant block variable *position* from the model. The resulting model is the same as the one we found manually.
 
 ### c)
 
 For the resulting model from c), can we also apply the Friedman test to test whether there is an effect of starter on acidity?
 
 ```{r}
-friedman.test(data) #?
+friedman.test(acidity ~ starter | position, data=cream_sum) # alternative syntax
+# friedman.test(cream_sum$acidity, cream_sum$starter, cream_sum$position)
 ```
+
+Since each combination of batch and starter exists in the dataset and there are more than two levels of both factors, we can apply the Friedman test to test whether there is an effect of starter on acidity.
+
+The p-value of the Friedman test is `0.0755` which is slightly lower than the significance threshold of `0.05` and therefore we accept the null hypothesis that alll means stem from the same distribution. So according to the Friedman test, we would conclude that there is no significant effect of starter on acidity.
+
+# *TODO: What is the difference between the Friedman test and the ANOVA test? Why do we get different results? Are we ignoring batch? Are we maybe not allowed to use it for some reason?*
 
 ### d)
 
@@ -37,5 +77,3 @@ Repeat c) by performing a mixed effects analysis, modeling the block variable(s)
 ```{r}
 lmer(data) #?
 ```
-
-

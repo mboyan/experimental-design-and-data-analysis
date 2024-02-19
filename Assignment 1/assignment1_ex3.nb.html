@@ -1763,21 +1763,36 @@ between the effects of starter 1 and starter 2 on acidity? Motivate your
 answer.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSA8LSByZWFkLmNzdihcImRhdGEvY3JlYW0udHh0XCIsIHNlcD1cIlwiLCBoZWFkZXI9VFJVRSlcbnN1bW1hcnkoZGF0YSlcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSA8LSByZWFkLmNzdihcImRhdGEvY3JlYW0udHh0XCIsIHNlcD1cIlwiLCBoZWFkZXI9VFJVRSlcbmNyZWFtX3RyZWF0bWVudCA8LSBkYXRhLmZyYW1lKGFjaWRpdHk9ZGF0YVssMV0sIGJhdGNoPWZhY3RvcihkYXRhWywyXSksIHBvc2l0aW9uPWZhY3RvcihkYXRhWywzXSksIHN0YXJ0ZXI9ZmFjdG9yKGRhdGFbLDRdKSlcblxuY3JlYW1hb3ZfdHJlYXRtZW50IDwtIGxtKGFjaWRpdHkgfiBiYXRjaCArIHBvc2l0aW9uICsgc3RhcnRlciwgZGF0YT1jcmVhbV90cmVhdG1lbnQpXG5hbm92YShjcmVhbWFvdl90cmVhdG1lbnQpXG5zdW1tYXJ5KGNyZWFtYW92X3RyZWF0bWVudClcbmBgYCJ9 -->
 <pre class="r"><code>data &lt;- read.csv(&quot;data/cream.txt&quot;, sep=&quot;&quot;, header=TRUE)
-summary(data)</code></pre>
+cream_treatment &lt;- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
+
+creamaov_treatment &lt;- lm(acidity ~ batch + position + starter, data=cream_treatment)
+anova(creamaov_treatment)
+summary(creamaov_treatment)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiICAgIGFjaWRpdHkgICAgICAgICAgIGJhdGNoICAgICAgcG9zaXRpb24gICAgc3RhcnRlciBcbiBNaW4uICAgOiA1LjM0MCAgIE1pbi4gICA6MSAgIE1pbi4gICA6MSAgIE1pbi4gICA6MSAgXG4gMXN0IFF1LjogNy45MjAgICAxc3QgUXUuOjIgICAxc3QgUXUuOjIgICAxc3QgUXUuOjIgIFxuIE1lZGlhbiA6IDguMTIwICAgTWVkaWFuIDozICAgTWVkaWFuIDozICAgTWVkaWFuIDozICBcbiBNZWFuICAgOiA4LjY2MyAgIE1lYW4gICA6MyAgIE1lYW4gICA6MyAgIE1lYW4gICA6MyAgXG4gM3JkIFF1LjogOS41ODAgICAzcmQgUXUuOjQgICAzcmQgUXUuOjQgICAzcmQgUXUuOjQgIFxuIE1heC4gICA6MTIuMDAwICAgTWF4LiAgIDo1ICAgTWF4LiAgIDo1ICAgTWF4LiAgIDo1ICBcbiJ9 -->
-<pre><code>    acidity           batch      position    starter 
- Min.   : 5.340   Min.   :1   Min.   :1   Min.   :1  
- 1st Qu.: 7.920   1st Qu.:2   1st Qu.:2   1st Qu.:2  
- Median : 8.120   Median :3   Median :3   Median :3  
- Mean   : 8.663   Mean   :3   Mean   :3   Mean   :3  
- 3rd Qu.: 9.580   3rd Qu.:4   3rd Qu.:4   3rd Qu.:4  
- Max.   :12.000   Max.   :5   Max.   :5   Max.   :5  </code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYW1fc3VtIDwtIGRhdGEuZnJhbWUoYWNpZGl0eT1kYXRhWywxXSwgYmF0Y2g9ZmFjdG9yKGRhdGFbLDJdKSwgcG9zaXRpb249ZmFjdG9yKGRhdGFbLDNdKSwgc3RhcnRlcj1mYWN0b3IoZGF0YVssNF0pKVxuY29udHJhc3RzKGNyZWFtX3N1bSRiYXRjaCkgPC0gY29udHIuc3VtXG5jb250cmFzdHMoY3JlYW1fc3VtJHBvc2l0aW9uKSA8LSBjb250ci5zdW1cbmNvbnRyYXN0cyhjcmVhbV9zdW0kc3RhcnRlcikgPC0gY29udHIuc3VtXG5cbmNyZWFtYW92X3N1bSA8LSBsbShhY2lkaXR5IH4gYmF0Y2ggKyBwb3NpdGlvbiArIHN0YXJ0ZXIsIGRhdGE9Y3JlYW1fc3VtKVxuYW5vdmEoY3JlYW1hb3Zfc3VtKVxuc3VtbWFyeShjcmVhbWFvdl9zdW0pXG5gYGAifQ== -->
+<pre class="r"><code>cream_sum &lt;- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
+contrasts(cream_sum$batch) &lt;- contr.sum
+contrasts(cream_sum$position) &lt;- contr.sum
+contrasts(cream_sum$starter) &lt;- contr.sum
+
+creamaov_sum &lt;- lm(acidity ~ batch + position + starter, data=cream_sum)
+anova(creamaov_sum)
+summary(creamaov_sum)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>We perform a three-way ANOVA using treatment paramterization. We look
+at the coefficients to determine the significance of the means of our
+baseline scenario representing <strong>starter1</strong> and the level
+<strong>starter2</strong> sharing the same mean. As the p-value is
+<em>0.7538</em>, we presume that there is no significant difference
+between the effect of the two starters on acidity.</p>
 </div>
 <div id="b" class="section level3">
 <h3>b)</h3>
@@ -1788,25 +1803,72 @@ for the resulting “fixed effects” model. Which starter(s) lead to
 significantly different acidity? Motivate your answer.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYW1hb3ZfZml4ZWRfc3VtIDwtIGxtKGFjaWRpdHkgfiBzdGFydGVyICsgYmF0Y2gsIGRhdGE9Y3JlYW1fc3VtKVxuYW5vdmEoY3JlYW1hb3ZfZml4ZWRfc3VtKVxuc3VtbWFyeShjcmVhbWFvdl9maXhlZF9zdW0pXG5gYGAifQ== -->
+<pre class="r"><code>creamaov_fixed_sum &lt;- lm(acidity ~ starter + batch, data=cream_sum)
+anova(creamaov_fixed_sum)
+summary(creamaov_fixed_sum)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>Looking at the sum parameterization ANOVA table of a), we find that
+the p-value for the factor <em>position</em> is <code>0.411191</code>
+and all individual levels have a p-value larger than <code>0.05</code>
+stating their lack of significance for the model. We can therefore
+remove the block variable <em>position</em> from the model. As the
+<em>batch</em> variable has a factor p-value of <code>0.001632</code> we
+can conclude that it is significant for the model and should be kept in
+our fixed effects model, further substantiated by a particularly
+relevant instance of <strong>batch2</strong> with p-value
+<code>0.000368</code>. The fixed effects model formula therefore becomes
+<code>acidity ~ starter + batch</code> ignoring interactions.</p>
+<p>In this model, we find that <strong>starter3</strong> and
+<strong>starter4</strong> have a very significant effect on acidity with
+p-values below <code>0.001</code>.</p>
 </div>
+</div>
+<div id="todo-what-about-starter5-in-the-sum-paramterization-model-what-are-we-comparing-here-again-double-check-this-makes-sense." class="section level1">
+<h1><em>TODO: What about starter5 in the sum paramterization model? What
+are we comparing here again? Double-check this makes sense.</em></h1>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYW1hb3Zfc3VtX2F1dG8gPC0gc3RlcChjcmVhbWFvdl9zdW0pXG5hbm92YShjcmVhbWFvdl9zdW1fYXV0bylcbnN1bW1hcnkoY3JlYW1hb3Zfc3VtX2F1dG8pXG5gYGAifQ== -->
+<pre class="r"><code>creamaov_sum_auto &lt;- step(creamaov_sum)
+anova(creamaov_sum_auto)
+summary(creamaov_sum_auto)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>The step function utility further substantiates our previous results
+by also removing the insignificant block variable <em>position</em> from
+the model. The resulting model is the same as the one we found
+manually.</p>
 <div id="c" class="section level3">
 <h3>c)</h3>
 <p>For the resulting model from c), can we also apply the Friedman test
 to test whether there is an effect of starter on acidity?</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZnJpZWRtYW4udGVzdChkYXRhKVxuYGBgIn0= -->
-<pre class="r"><code>friedman.test(data)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZnJpZWRtYW4udGVzdChhY2lkaXR5IH4gc3RhcnRlciB8IHBvc2l0aW9uLCBkYXRhPWNyZWFtX3N1bSkgIyBhbHRlcm5hdGl2ZSBzeW50YXhcbiMgZnJpZWRtYW4udGVzdChjcmVhbV9zdW0kYWNpZGl0eSwgY3JlYW1fc3VtJHN0YXJ0ZXIsIGNyZWFtX3N1bSRwb3NpdGlvbilcbmBgYCJ9 -->
+<pre class="r"><code>friedman.test(acidity ~ starter | position, data=cream_sum) # alternative syntax
+# friedman.test(cream_sum$acidity, cream_sum$starter, cream_sum$position)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZnJpZWRtYW4udGVzdC5kZWZhdWx0KGRhdGEpIDogXG4gIGFyZ3VtZW50IFwiZ3JvdXBzXCIgaXMgbWlzc2luZywgd2l0aCBubyBkZWZhdWx0XG4ifQ== -->
-<pre><code>Error in friedman.test.default(data) : 
-  argument &quot;groups&quot; is missing, with no default</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>Since each combination of batch and starter exists in the dataset and
+there are more than two levels of both factors, we can apply the
+Friedman test to test whether there is an effect of starter on
+acidity.</p>
+<p>The p-value of the Friedman test is <code>0.0755</code> which is
+slightly lower than the significance threshold of <code>0.05</code> and
+therefore we accept the null hypothesis that alll means stem from the
+same distribution. So according to the Friedman test, we would conclude
+that there is no significant effect of starter on acidity.</p>
 </div>
+</div>
+<div id="todo-what-is-the-difference-between-the-friedman-test-and-the-anova-test-why-do-we-get-different-results-are-we-ignoring-batch-are-we-maybe-not-allowed-to-use-it-for-some-reason" class="section level1">
+<h1><em>TODO: What is the difference between the Friedman test and the
+ANOVA test? Why do we get different results? Are we ignoring batch? Are
+we maybe not allowed to use it for some reason?</em></h1>
 <div id="d" class="section level3">
 <h3>d)</h3>
 <p>Repeat c) by performing a mixed effects analysis, modeling the block
@@ -1819,16 +1881,11 @@ results found by using the fixed effects model in c). Comment.</p>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG1lcihkYXRhKSAjP1xuYGBgIn0= -->
 <pre class="r"><code>lmer(data) #?</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZXZhbChwcmVkdmFycywgZGF0YSwgZW52KSA6IG9iamVjdCAnYWNpZGl0eScgbm90IGZvdW5kXG4ifQ== -->
-<pre><code>Error in eval(predvars, data, env) : object &#39;acidity&#39; not found</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKIyMgU291ciBDcmVhbQoKIyMjIGEpCgpBbmFseXplIHRoZSBkYXRhIGluIGEgdGhyZWUtd2F5IGV4cGVyaW1lbnQgd2l0aG91dCBpbnRlcmFjdGlvbnMgd2l0aCBhY2lkaXR5IGFzIHJlc3BvbnNlIGFuZCBzdGFydGVyLCBiYXRjaCBhbmQgcG9zaXRpb24gYXMgZmFjdG9ycy4gQnkgdXNpbmcgc3VtbWFyeSBjb21tYW5kLCBjYW4geW91IHRlbGwgd2hldGhlciB0aGVyZSBpcyBhIHNpZ25pZmljYW50IGRpZmZlcmVuY2UgYmV0d2VlbiB0aGUgZWZmZWN0cyBvZiBzdGFydGVyIDEgYW5kIHN0YXJ0ZXIgMiBvbiBhY2lkaXR5PyBNb3RpdmF0ZSB5b3VyIGFuc3dlci4KCmBgYHtyfQpkYXRhIDwtIHJlYWQuY3N2KCJkYXRhL2NyZWFtLnR4dCIsIHNlcD0iIiwgaGVhZGVyPVRSVUUpCnN1bW1hcnkoZGF0YSkKYGBgCgojIyMgYikKClJlY2FsbCB0aGF0IHRoZSBtYWluIGludGVyZXN0IGlzIGluIHRoZSBlZmZlY3Qgb2Ygc3RhcnRlciBvbiBhY2lkaXR5OyBmYWN0b3JzIHBvc2l0aW9uIGFuZCBiYXRjaCByZXByZXNlbnQgdGhlIGJsb2NrIHZhcmlhYmxlcy4gUmVtb3ZlIGluc2lnbmlmaWNhbnQgYmxvY2sgdmFyaWFibGUocykgaWYgdGhlcmUgYXJlIHN1Y2gsIGFuZCBwZXJmb3JtIGFuIEFOT1ZBIGZvciB0aGUgcmVzdWx0aW5nIOKAnGZpeGVkIGVmZmVjdHPigJ0gbW9kZWwuIFdoaWNoIHN0YXJ0ZXIocykgbGVhZCB0byBzaWduaWZpY2FudGx5IGRpZmZlcmVudCBhY2lkaXR5PyBNb3RpdmF0ZSB5b3VyIGFuc3dlci4KCmBgYHtyfQoKYGBgCgojIyMgYykKCkZvciB0aGUgcmVzdWx0aW5nIG1vZGVsIGZyb20gYyksIGNhbiB3ZSBhbHNvIGFwcGx5IHRoZSBGcmllZG1hbiB0ZXN0IHRvIHRlc3Qgd2hldGhlciB0aGVyZSBpcyBhbiBlZmZlY3Qgb2Ygc3RhcnRlciBvbiBhY2lkaXR5PwoKYGBge3J9CmZyaWVkbWFuLnRlc3QoZGF0YSkgIz8KYGBgCgojIyMgZCkKClJlcGVhdCBjKSBieSBwZXJmb3JtaW5nIGEgbWl4ZWQgZWZmZWN0cyBhbmFseXNpcywgbW9kZWxpbmcgdGhlIGJsb2NrIHZhcmlhYmxlKHMpIChpZiB0aGVyZSBhcmUgYW55KSBhcyBhIHJhbmRvbSBlZmZlY3QgYnkgdXNpbmcgdGhlIGZ1bmN0aW9uIGxtZXIuIChZb3Ugd2lsbCBuZWVkIHRvIGluc3RhbGwgdGhlIFItcGFja2FnZSBsbWU0LCB3aGljaCBpcyBub3QgaW5jbHVkZWQgaW4gdGhlIHN0YW5kYXJkIGRpc3RyaWJ1dGlvbiBvZiBSLikgQ29tcGFyZSB5b3VyIHJlc3VsdHMgdG8gdGhlIHJlc3VsdHMgZm91bmQgYnkgdXNpbmcgdGhlIGZpeGVkIGVmZmVjdHMgbW9kZWwgaW4gYykuIENvbW1lbnQuCgpgYGB7cn0KbG1lcihkYXRhKSAjPwpgYGAKCgo=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKIyMgU291ciBDcmVhbQoKIyMjIGEpCgpBbmFseXplIHRoZSBkYXRhIGluIGEgdGhyZWUtd2F5IGV4cGVyaW1lbnQgd2l0aG91dCBpbnRlcmFjdGlvbnMgd2l0aCBhY2lkaXR5IGFzIHJlc3BvbnNlIGFuZCBzdGFydGVyLCBiYXRjaCBhbmQgcG9zaXRpb24gYXMgZmFjdG9ycy4gQnkgdXNpbmcgc3VtbWFyeSBjb21tYW5kLCBjYW4geW91IHRlbGwgd2hldGhlciB0aGVyZSBpcyBhIHNpZ25pZmljYW50IGRpZmZlcmVuY2UgYmV0d2VlbiB0aGUgZWZmZWN0cyBvZiBzdGFydGVyIDEgYW5kIHN0YXJ0ZXIgMiBvbiBhY2lkaXR5PyBNb3RpdmF0ZSB5b3VyIGFuc3dlci4KCmBgYHtyfQpkYXRhIDwtIHJlYWQuY3N2KCJkYXRhL2NyZWFtLnR4dCIsIHNlcD0iIiwgaGVhZGVyPVRSVUUpCmNyZWFtX3RyZWF0bWVudCA8LSBkYXRhLmZyYW1lKGFjaWRpdHk9ZGF0YVssMV0sIGJhdGNoPWZhY3RvcihkYXRhWywyXSksIHBvc2l0aW9uPWZhY3RvcihkYXRhWywzXSksIHN0YXJ0ZXI9ZmFjdG9yKGRhdGFbLDRdKSkKCmNyZWFtYW92X3RyZWF0bWVudCA8LSBsbShhY2lkaXR5IH4gYmF0Y2ggKyBwb3NpdGlvbiArIHN0YXJ0ZXIsIGRhdGE9Y3JlYW1fdHJlYXRtZW50KQphbm92YShjcmVhbWFvdl90cmVhdG1lbnQpCnN1bW1hcnkoY3JlYW1hb3ZfdHJlYXRtZW50KQpgYGAKCmBgYHtyfQpjcmVhbV9zdW0gPC0gZGF0YS5mcmFtZShhY2lkaXR5PWRhdGFbLDFdLCBiYXRjaD1mYWN0b3IoZGF0YVssMl0pLCBwb3NpdGlvbj1mYWN0b3IoZGF0YVssM10pLCBzdGFydGVyPWZhY3RvcihkYXRhWyw0XSkpCmNvbnRyYXN0cyhjcmVhbV9zdW0kYmF0Y2gpIDwtIGNvbnRyLnN1bQpjb250cmFzdHMoY3JlYW1fc3VtJHBvc2l0aW9uKSA8LSBjb250ci5zdW0KY29udHJhc3RzKGNyZWFtX3N1bSRzdGFydGVyKSA8LSBjb250ci5zdW0KCmNyZWFtYW92X3N1bSA8LSBsbShhY2lkaXR5IH4gYmF0Y2ggKyBwb3NpdGlvbiArIHN0YXJ0ZXIsIGRhdGE9Y3JlYW1fc3VtKQphbm92YShjcmVhbWFvdl9zdW0pCnN1bW1hcnkoY3JlYW1hb3Zfc3VtKQpgYGAKCldlIHBlcmZvcm0gYSB0aHJlZS13YXkgQU5PVkEgdXNpbmcgdHJlYXRtZW50IHBhcmFtdGVyaXphdGlvbi4gV2UgbG9vayBhdCB0aGUgY29lZmZpY2llbnRzIHRvIGRldGVybWluZSB0aGUgc2lnbmlmaWNhbmNlIG9mIHRoZSBtZWFucyBvZiBvdXIgYmFzZWxpbmUgc2NlbmFyaW8gcmVwcmVzZW50aW5nICoqc3RhcnRlcjEqKiBhbmQgdGhlIGxldmVsICoqc3RhcnRlcjIqKiBzaGFyaW5nIHRoZSBzYW1lIG1lYW4uIEFzIHRoZSBwLXZhbHVlIGlzICowLjc1MzgqLCB3ZSBwcmVzdW1lIHRoYXQgdGhlcmUgaXMgbm8gc2lnbmlmaWNhbnQgZGlmZmVyZW5jZSBiZXR3ZWVuIHRoZSBlZmZlY3Qgb2YgdGhlIHR3byBzdGFydGVycyBvbiBhY2lkaXR5LgoKIyMjIGIpCgpSZWNhbGwgdGhhdCB0aGUgbWFpbiBpbnRlcmVzdCBpcyBpbiB0aGUgZWZmZWN0IG9mIHN0YXJ0ZXIgb24gYWNpZGl0eTsgZmFjdG9ycyBwb3NpdGlvbiBhbmQgYmF0Y2ggcmVwcmVzZW50IHRoZSBibG9jayB2YXJpYWJsZXMuIFJlbW92ZSBpbnNpZ25pZmljYW50IGJsb2NrIHZhcmlhYmxlKHMpIGlmIHRoZXJlIGFyZSBzdWNoLCBhbmQgcGVyZm9ybSBhbiBBTk9WQSBmb3IgdGhlIHJlc3VsdGluZyDigJxmaXhlZCBlZmZlY3Rz4oCdIG1vZGVsLiBXaGljaCBzdGFydGVyKHMpIGxlYWQgdG8gc2lnbmlmaWNhbnRseSBkaWZmZXJlbnQgYWNpZGl0eT8gTW90aXZhdGUgeW91ciBhbnN3ZXIuCgpgYGB7cn0KY3JlYW1hb3ZfZml4ZWRfc3VtIDwtIGxtKGFjaWRpdHkgfiBzdGFydGVyICsgYmF0Y2gsIGRhdGE9Y3JlYW1fc3VtKQphbm92YShjcmVhbWFvdl9maXhlZF9zdW0pCnN1bW1hcnkoY3JlYW1hb3ZfZml4ZWRfc3VtKQpgYGAKCkxvb2tpbmcgYXQgdGhlIHN1bSBwYXJhbWV0ZXJpemF0aW9uIEFOT1ZBIHRhYmxlIG9mIGEpLCB3ZSBmaW5kIHRoYXQgdGhlIHAtdmFsdWUgZm9yIHRoZSBmYWN0b3IgKnBvc2l0aW9uKiBpcyBgMC40MTExOTFgIGFuZCBhbGwgaW5kaXZpZHVhbCBsZXZlbHMgaGF2ZSBhIHAtdmFsdWUgbGFyZ2VyIHRoYW4gYDAuMDVgIHN0YXRpbmcgdGhlaXIgbGFjayBvZiBzaWduaWZpY2FuY2UgZm9yIHRoZSBtb2RlbC4gV2UgY2FuIHRoZXJlZm9yZSByZW1vdmUgdGhlIGJsb2NrIHZhcmlhYmxlICpwb3NpdGlvbiogZnJvbSB0aGUgbW9kZWwuIEFzIHRoZSAqYmF0Y2gqIHZhcmlhYmxlIGhhcyBhIGZhY3RvciBwLXZhbHVlIG9mIGAwLjAwMTYzMmAgd2UgY2FuIGNvbmNsdWRlIHRoYXQgaXQgaXMgc2lnbmlmaWNhbnQgZm9yIHRoZSBtb2RlbCBhbmQgc2hvdWxkIGJlIGtlcHQgaW4gb3VyIGZpeGVkIGVmZmVjdHMgbW9kZWwsIGZ1cnRoZXIgc3Vic3RhbnRpYXRlZCBieSBhIHBhcnRpY3VsYXJseSByZWxldmFudCBpbnN0YW5jZSBvZiAqKmJhdGNoMioqIHdpdGggcC12YWx1ZSBgMC4wMDAzNjhgLiBUaGUgZml4ZWQgZWZmZWN0cyBtb2RlbCBmb3JtdWxhIHRoZXJlZm9yZSBiZWNvbWVzIGBhY2lkaXR5IH4gc3RhcnRlciArIGJhdGNoYCBpZ25vcmluZyBpbnRlcmFjdGlvbnMuCgpJbiB0aGlzIG1vZGVsLCB3ZSBmaW5kIHRoYXQgKipzdGFydGVyMyoqIGFuZCAqKnN0YXJ0ZXI0KiogaGF2ZSBhIHZlcnkgc2lnbmlmaWNhbnQgZWZmZWN0IG9uIGFjaWRpdHkgd2l0aCBwLXZhbHVlcyBiZWxvdyBgMC4wMDFgLgoKIyAqVE9ETzogV2hhdCBhYm91dCBzdGFydGVyNSBpbiB0aGUgc3VtIHBhcmFtdGVyaXphdGlvbiBtb2RlbD8gV2hhdCBhcmUgd2UgY29tcGFyaW5nIGhlcmUgYWdhaW4/IERvdWJsZS1jaGVjayB0aGlzIG1ha2VzIHNlbnNlLioKCmBgYHtyfQpjcmVhbWFvdl9zdW1fYXV0byA8LSBzdGVwKGNyZWFtYW92X3N1bSkKYW5vdmEoY3JlYW1hb3Zfc3VtX2F1dG8pCnN1bW1hcnkoY3JlYW1hb3Zfc3VtX2F1dG8pCmBgYAoKVGhlIHN0ZXAgZnVuY3Rpb24gdXRpbGl0eSBmdXJ0aGVyIHN1YnN0YW50aWF0ZXMgb3VyIHByZXZpb3VzIHJlc3VsdHMgYnkgYWxzbyByZW1vdmluZyB0aGUgaW5zaWduaWZpY2FudCBibG9jayB2YXJpYWJsZSAqcG9zaXRpb24qIGZyb20gdGhlIG1vZGVsLiBUaGUgcmVzdWx0aW5nIG1vZGVsIGlzIHRoZSBzYW1lIGFzIHRoZSBvbmUgd2UgZm91bmQgbWFudWFsbHkuCgojIyMgYykKCkZvciB0aGUgcmVzdWx0aW5nIG1vZGVsIGZyb20gYyksIGNhbiB3ZSBhbHNvIGFwcGx5IHRoZSBGcmllZG1hbiB0ZXN0IHRvIHRlc3Qgd2hldGhlciB0aGVyZSBpcyBhbiBlZmZlY3Qgb2Ygc3RhcnRlciBvbiBhY2lkaXR5PwoKYGBge3J9CmZyaWVkbWFuLnRlc3QoYWNpZGl0eSB+IHN0YXJ0ZXIgfCBwb3NpdGlvbiwgZGF0YT1jcmVhbV9zdW0pICMgYWx0ZXJuYXRpdmUgc3ludGF4CiMgZnJpZWRtYW4udGVzdChjcmVhbV9zdW0kYWNpZGl0eSwgY3JlYW1fc3VtJHN0YXJ0ZXIsIGNyZWFtX3N1bSRwb3NpdGlvbikKYGBgCgpTaW5jZSBlYWNoIGNvbWJpbmF0aW9uIG9mIGJhdGNoIGFuZCBzdGFydGVyIGV4aXN0cyBpbiB0aGUgZGF0YXNldCBhbmQgdGhlcmUgYXJlIG1vcmUgdGhhbiB0d28gbGV2ZWxzIG9mIGJvdGggZmFjdG9ycywgd2UgY2FuIGFwcGx5IHRoZSBGcmllZG1hbiB0ZXN0IHRvIHRlc3Qgd2hldGhlciB0aGVyZSBpcyBhbiBlZmZlY3Qgb2Ygc3RhcnRlciBvbiBhY2lkaXR5LgoKVGhlIHAtdmFsdWUgb2YgdGhlIEZyaWVkbWFuIHRlc3QgaXMgYDAuMDc1NWAgd2hpY2ggaXMgc2xpZ2h0bHkgbG93ZXIgdGhhbiB0aGUgc2lnbmlmaWNhbmNlIHRocmVzaG9sZCBvZiBgMC4wNWAgYW5kIHRoZXJlZm9yZSB3ZSBhY2NlcHQgdGhlIG51bGwgaHlwb3RoZXNpcyB0aGF0IGFsbGwgbWVhbnMgc3RlbSBmcm9tIHRoZSBzYW1lIGRpc3RyaWJ1dGlvbi4gU28gYWNjb3JkaW5nIHRvIHRoZSBGcmllZG1hbiB0ZXN0LCB3ZSB3b3VsZCBjb25jbHVkZSB0aGF0IHRoZXJlIGlzIG5vIHNpZ25pZmljYW50IGVmZmVjdCBvZiBzdGFydGVyIG9uIGFjaWRpdHkuCgojICpUT0RPOiBXaGF0IGlzIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4gdGhlIEZyaWVkbWFuIHRlc3QgYW5kIHRoZSBBTk9WQSB0ZXN0PyBXaHkgZG8gd2UgZ2V0IGRpZmZlcmVudCByZXN1bHRzPyBBcmUgd2UgaWdub3JpbmcgYmF0Y2g/IEFyZSB3ZSBtYXliZSBub3QgYWxsb3dlZCB0byB1c2UgaXQgZm9yIHNvbWUgcmVhc29uPyoKCiMjIyBkKQoKUmVwZWF0IGMpIGJ5IHBlcmZvcm1pbmcgYSBtaXhlZCBlZmZlY3RzIGFuYWx5c2lzLCBtb2RlbGluZyB0aGUgYmxvY2sgdmFyaWFibGUocykgKGlmIHRoZXJlIGFyZSBhbnkpIGFzIGEgcmFuZG9tIGVmZmVjdCBieSB1c2luZyB0aGUgZnVuY3Rpb24gbG1lci4gKFlvdSB3aWxsIG5lZWQgdG8gaW5zdGFsbCB0aGUgUi1wYWNrYWdlIGxtZTQsIHdoaWNoIGlzIG5vdCBpbmNsdWRlZCBpbiB0aGUgc3RhbmRhcmQgZGlzdHJpYnV0aW9uIG9mIFIuKSBDb21wYXJlIHlvdXIgcmVzdWx0cyB0byB0aGUgcmVzdWx0cyBmb3VuZCBieSB1c2luZyB0aGUgZml4ZWQgZWZmZWN0cyBtb2RlbCBpbiBjKS4gQ29tbWVudC4KCmBgYHtyfQpsbWVyKGRhdGEpICM/CmBgYAo=</div>
 
 
 
