@@ -5,6 +5,10 @@ output: html_notebook
 
 ## Sour Cream
 
+Interesting facts not relevant to subquestions directly:
+
+-   as we have only one sample per combination of factors, we should not test for interactions. However, we can still test for main effects.
+
 ### a)
 
 Analyze the data in a three-way experiment without interactions with acidity as response and starter, batch and position as factors. By using summary command, can you tell whether there is a significant difference between the effects of starter 1 and starter 2 on acidity? Motivate your answer.
@@ -14,6 +18,11 @@ data <- read.csv("data/cream.txt", sep="", header=TRUE)
 cream_treatment <- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
 
 creamaov_treatment <- lm(acidity ~ batch + position + starter, data=cream_treatment)
+
+# Visual normality check
+qqnorm(residuals(creamaov_treatment))
+plot(fitted(creamaov_treatment), residuals(creamaov_treatment))
+
 anova(creamaov_treatment)
 summary(creamaov_treatment)
 ```
@@ -25,11 +34,18 @@ contrasts(cream_sum$position) <- contr.sum
 contrasts(cream_sum$starter) <- contr.sum
 
 creamaov_sum <- lm(acidity ~ batch + position + starter, data=cream_sum)
+
+# Visual normality check, should not be needed as sum parameterization should not change the normality of the data
+qqnorm(residuals(creamaov_sum))
+plot(fitted(creamaov_sum), residuals(creamaov_sum))
+
 anova(creamaov_sum)
 summary(creamaov_sum)
 ```
 
-We perform a three-way ANOVA using treatment paramterization. We look at the coefficients to determine the significance of the means of our baseline scenario representing **starter1** and the level **starter2** sharing the same mean. As the p-value is *0.7538*, we presume that there is no significant difference between the effect of the two starters on acidity.
+We perform a three-way ANOVA using treatment parameterization. To ensure our ANOVA results are valid, we inspect the QQ plot as well as fitted vs. residual plot to ensure normality. We pass this test based on the distribution visible there. We then look at the ANOVA coefficients to determine the significance of the means of our baseline scenario representing **starter1** and the level **starter2** sharing the same mean. As the p-value is *0.7538*, we presume that there is no significant difference between the effect of the two starters on acidity and assume they stem from the same distribution.
+
+$$\alpha_{1} = 0 \text{ (treatment parameterization) } \land \alpha_{2} = 0 \rightarrow \mu^{s}_{1}=\mu^{s}_{2}$$
 
 ### b)
 
@@ -37,6 +53,11 @@ Recall that the main interest is in the effect of starter on acidity; factors po
 
 ```{r}
 creamaov_fixed_sum <- lm(acidity ~ starter + batch, data=cream_sum)
+
+# Visual normality check
+qqnorm(residuals(creamaov_fixed_sum))
+plot(fitted(creamaov_fixed_sum), residuals(creamaov_fixed_sum))
+
 anova(creamaov_fixed_sum)
 summary(creamaov_fixed_sum)
 ```
@@ -49,6 +70,11 @@ In this model, we find that **starter3** and **starter4** have a very significan
 
 ```{r}
 creamaov_sum_auto <- step(creamaov_sum)
+
+# Visual normality check
+qqnorm(residuals(creamaov_sum_auto))
+plot(fitted(creamaov_sum_auto), residuals(creamaov_sum_auto))
+
 anova(creamaov_sum_auto)
 summary(creamaov_sum_auto)
 ```
@@ -66,7 +92,7 @@ friedman.test(acidity ~ starter | position, data=cream_sum) # alternative syntax
 
 Since each combination of batch and starter exists in the dataset and there are more than two levels of both factors, we can apply the Friedman test to test whether there is an effect of starter on acidity.
 
-The p-value of the Friedman test is `0.0755` which is slightly lower than the significance threshold of `0.05` and therefore we accept the null hypothesis that alll means stem from the same distribution. So according to the Friedman test, we would conclude that there is no significant effect of starter on acidity.
+The p-value of the Friedman test is `0.0755` which is slightly lower than the significance threshold of `0.05` and therefore we accept the null hypothesis that all means stem from the same distribution. So according to the Friedman test, we would conclude that there is no significant effect of starter on acidity.
 
 # *TODO: What is the difference between the Friedman test and the ANOVA test? Why do we get different results? Are we ignoring batch? Are we maybe not allowed to use it for some reason?*
 
@@ -75,5 +101,15 @@ The p-value of the Friedman test is `0.0755` which is slightly lower than the si
 Repeat c) by performing a mixed effects analysis, modeling the block variable(s) (if there are any) as a random effect by using the function lmer. (You will need to install the R-package lme4, which is not included in the standard distribution of R.) Compare your results to the results found by using the fixed effects model in c). Comment.
 
 ```{r}
-lmer(data) #?
+library(lme4)
+mixedaov <- lmer(acidity ~ batch + starter + (1|position), data=cream_sum)
+
+# Visual normality check
+qqnorm(residuals(mixedaov))
+plot(fitted(mixedaov), residuals(mixedaov))
+
+anova(mixedaov)
+summary(mixedaov)
 ```
+
+Using **`(1|position)`**, we allow the intercepts of the model to vary randomly across different levels of the factor *position*.
