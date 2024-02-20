@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Exercise 2"
 output: html_notebook
 ---
 
@@ -15,12 +15,67 @@ summary(hg_data)
 
 The set consists of 80 entries. As can be read from the data, the administering of the treatment is conducted using two different methods, A and B, and in four types of doses, labeled 1, 2, 3 and 4 and corresponding to 0, 5, 10 and 15 g of the drug. The rate (dose) and method comprise the factors which will be analysed, and should therefore be transformed into factor datatypes.
 ```{r}
-hg_data$rate = as.factor(hg_data$rate)
-hg_data$method = as.factor(hg_data$method)
+hg_data$rate = as.factor(hg_data$rate); hg_data$method = as.factor(hg_data$method)
 ```
 
-a) A two-way ANOVA test on the two factors would include a random assignment of $N=80$ fishes to each combination of factor levels. With a sample size $N=80$, a number of levels for the rate factor $I=4$ and a number of levels for the method factor $J=2$, this random assignment can be demonstrated by the following code. As the original data set also contains 80 entries, the hemoglobin levels can be used as an exemplary numerical outcome, with any potential entry ordering randomized by the `sample()` function.
+a) Upon first inspection of the data, it could be identified that the sample in the data set exhibits _balanced design_, i.e. with an equal amount of observations per factor level combination. This can be verified by creating a contingency table of the counts at each factor level combination:
 ```{r}
-N=80; I=4; J=2
-combinations=rbind(rep(1:I,each=N*J), rep(1:J,each=N*I), sample(hg_data$hemoglobin))
+table(hg_data$rate, hg_data$method)
+```
+It is thus evident that each factor combination contains $N=10$ experimental units. This makes the data suitable for a two-way ANOVA test on the factors `rate` and `method`. This exercise demonstrates through a simulation how such a balanced-design sample can be acquired from a large fish population. For this purpose, a population of $M=1000$ fish is generated, each assigned a random `rate` and `method` factor, and a hemoglobin level sampled from a normal distribution with a mean and a standard deviation equivalent to the mean and standard deviation of the original data set. The resulting data set is then sampled to obtain a balanced design of 80 fish, and the contingency table is calculated to verify the balance of the sample.
+```{r}
+set.seed(123)
+M=10000; I=4; J=2
+
+# Generate population
+rates <- sample(1:I, M, replace=TRUE)
+methods <- sample(c('A', 'B'), M, replace=TRUE)
+hemoglobin <- rnorm(M, mean(hg_data$hemoglobin), sd(hg_data$hemoglobin))
+dummy_pop <- data.frame(rate=rates, method=methods, hemoglobin=hemoglobin)
+
+# Create factor combinations
+N=80
+dummy_pop$combos <- interaction(dummy_pop$rate, dummy_pop$method)
+combo_groups <- split(dummy_pop, dummy_pop$combos)
+print(length(combo_groups[[2]]))
+
+# Sample balanced design
+balanced_groups <- lapply(combo_groups, function(group) group[sample(nrow(group), min(N, nrow(group))), ])
+balanced_data <- do.call(rbind, balanced_groups)
+balanced_data <- subset(balanced_data, select=-combos)
+
+# Verify balance
+table(balanced_data$rate, balanced_data$method)
+```
+b) Using the provided data set, a two-way ANOVA test is performed to investigate the influence of the factors `rate` and `method` on the hemoglobin levels in the trout. The test is conducted by constructing a linear model from the two factors and using it as input for the `anova` function. By default, a treatment parameterization is used.
+```{r}
+model <- lm(hemoglobin~rate*method, data=hg_data); anova(model)
+```
+The first observation to be made is whether the $H_{AB}$ hypothesis holds, i.e. whether an interaction between the two factors is absent. This is done by examining the p-value of the interaction term in the ANOVA table. In this case, $p=0.3769$, which is not significant at the 5% level, and thus the null hypothesis is not rejected. This suggests that there is no evidence for interaction between the two factors. Considering the separate effect of the factors, the p-value for the `rate` factor is below the significance level, indicating a rejection of the null-hypothesis, while the p-value of the `method` factor is above the significance level, indicating a failure to reject the null-hypothesis.
+
+To validate the test, the assumptions of the ANOVA test should be checked. The residuals of the model are examined for normality using a Q-Q-plot and are plotted against the fitted model values to ensure there is no pattern in the residuals.
+```{r}
+par(mfrow=c(1,2))
+qqnorm(residuals(model)); plot(fitted(model), residuals(model))
+```
+A qualitative inspection of the plots confirms that these assumptions are met to a satisfactory degree.
+
+c) A closer look into the effect of the separate factors can be obtained by examining a summary of the model.
+```{r}
+summary(model)
+```
+This confirms the significance of the `rate` factor, as all p-values for its levels are below 0.05. Since the previous analysis showed no indication of interaction between the factors, it can be concluded that the `rate` factor has a greater effect on the hemoglobin levels than the `method` factor. Furthermore, the lack of significant interaction allows the use of an additive model, which allows more specific comparisons between the factor levels.
+```{r}
+model2 <- lm(hemoglobin~rate+method, data=hg_data); anova(model2)
+summary(model2)
+```
+The first level of both factors is used as a reference level, implying that the corresponding $\alpha_1$ and $\beta_1$ contributions are equal to zero. As the hemoglobin level can be seen as the sum $Y_{i,j}=\mu+\alpha_i+\beta_j+e_{j,k}$, the highest yield can be calculated by adding the highest $\alpha_i$ and $\beta_j$ contributions to the mean $\mu$. From the summary it is evident that these are rate 2 (5g) and method B. Rate 2 therefore yields the highest mean hemoglobin level.
+
+Another sample measurement is the mean hemoglobin yield under a combination of rate 3 and method A. This can be calculated by adding the $\alpha_3$ and $\beta_1$ contributions to the mean $\mu$ through the following code:
+```{r}
+mu <- mean(hg_data$hemoglobin)
+print(mu)
+alpha3 <- summary(model2)$coefficients[3,1]
+beta1 <- summary(model2)$coefficients[5,1]
+mu + alpha3 + beta1
 ```
