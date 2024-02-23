@@ -25,7 +25,7 @@ table(hg_data$rate, hg_data$method)
 It is thus evident that each factor combination contains $N=10$ experimental units. This makes the data suitable for a two-way ANOVA test on the factors `rate` and `method`. This exercise demonstrates through a simulation how such a balanced-design sample can be acquired from a large fish population. For this purpose, a population of $M=1000$ fish is generated, each assigned a random `rate` and `method` factor, and a hemoglobin level sampled from a normal distribution with a mean and a standard deviation equivalent to the mean and standard deviation of the original data set. The resulting data set is then sampled to obtain a balanced design of 80 fish, and the contingency table is calculated to verify the balance of the sample.
 ```{r}
 set.seed(123)
-M=10000; I=4; J=2
+M=1000; I=4; J=2
 
 # Generate population
 rates <- sample(1:I, M, replace=TRUE)
@@ -34,7 +34,7 @@ hemoglobin <- rnorm(M, mean(hg_data$hemoglobin), sd(hg_data$hemoglobin))
 dummy_pop <- data.frame(rate=rates, method=methods, hemoglobin=hemoglobin)
 
 # Create factor combinations
-N=80
+N=10
 dummy_pop$combos <- interaction(dummy_pop$rate, dummy_pop$method)
 combo_groups <- split(dummy_pop, dummy_pop$combos)
 print(length(combo_groups[[2]]))

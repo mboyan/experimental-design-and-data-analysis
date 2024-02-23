@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
 output:
+  html_document:
+    df_print: paged
   pdf_document: default
   html_notebook: default
 ---
@@ -10,7 +12,7 @@ output:
 **a)**
 ```{r, fig.height=2.6, fig.width=6}
 #Read in the data and extract the relevant column
-ice_cream=read.csv("Ice_cream.csv",header=TRUE) 
+ice_cream=read.csv("data/Ice_cream.csv",header=TRUE) 
 video=ice_cream$video
 
 #Create relevant figures to assess distribution normality
@@ -18,7 +20,7 @@ par(mfrow=c(1,3))
 hist(video, xlab="Video Game Scores", main="Scores Histogram"); boxplot(video, ylab="Video Game Scores", main="Scores Boxplot"); qqnorm(video, main="Video Scores Q-Q Plot")
 ```
 
-The data for the video games scores appears to be close to normally distributed. Both the histogram and boxplot indicate that the scores are unimodal and moderately evenly distributed about the mean. The qq-plot confirms this as the data points are nearly linear. Hence, any testing or methods used with a normality assumption are justified. 
+The data for the video games scores appears to be close to normally distributed. Both the histogram and boxplot indicate that the scores are unimodal and moderately evenly distributed about the mean. The qq-plot confirms this as the data points are nearly linear. Hence, any testing or methods used with a normality assumption are justified.
 
 ```{r}
 #Constructing a bounded 97% confidence interval 
@@ -32,7 +34,7 @@ lower_bound = video_mean - margin_error
 upper_bound = video_mean + margin_error
 ```
 
-The bounds for the 97% confidence interval are [`r round(lower_bound, 4)`, `r round(upper_bound, 4)`]. 
+The bounds for the 97% confidence interval are [`r round(lower_bound, 4)`, `r round(upper_bound, 4)`].
 
 ```{r}
 #Calculating the number of samples needed for a confidence interval of at most length 3
@@ -55,10 +57,9 @@ Tstar015 = quantile(Tstar, 0.015)  #Lower bound
 Tstar985 = quantile(Tstar, 0.985)  #Upper bound
 
 confidence_interval = c(2*mean(video) - Tstar985, 2*mean(video) - Tstar015)
-print(confidence_interval)
 ```
 
-We notice that this confidence interval is minutely smaller than the bounded confidence interval above. However, they are extremely similar. Since the data is already relatively normally distributed, the original confidence interval likely provides a good enough estimate and bootstrapping is unnecessary in this case. 
+Our bootstrapped confidence interval is (`r round(confidence_interval[[1]], 4)`, `r round(confidence_interval[[2]], 4)`). We notice that this confidence interval is minutely smaller than the bounded confidence interval above. However, they are extremely similar. Since the data is already relatively normally distributed, the original confidence interval likely provides a good enough estimate and bootstrapping is unnecessary in this case.
 
 **b)**
 ```{r}
@@ -69,7 +70,7 @@ t.test(video, mu=50, alt="g")
 t.test(video, mu=51, alt="g")
 ```
 
-Since the p-value for the first one-sided t-test when $\mu_{0}$ = 50 is less than 0.05, we would reject the null hypothesis that the mean video game score for the sample is equal to 50 in favor of the alternative hypothesis that it is greater than 50. Since we are doing a right-sided t-test, we have a confidence interval that extends to the left of the mean by the standard error amount, but to the right to infinity, since we do not actually specify or care what the upper bound is for the mean, as long as it is greater than 50. In the second case, we have the same case with regard to the confidencee interval. However, our t statistic and p-value have changed. In the calculation of the t-value, we subtract $\mu$ from our calculated mean. When t differs greatly from 0, our p-value will be larger. In this case, our p-value is greater than 0.05, so we do not reject the null hypothesis that the mean is equal to 51. 
+Since the p-value for the first one-sided t-test when $\mu_{0}$ = 50 is less than 0.05, we would reject the null hypothesis that the mean video game score for the sample is equal to 50 in favor of the alternative hypothesis that it is greater than 50. Since we are doing a right-sided t-test, we have a confidence interval that extends to the left of the mean by the standard error amount, but to the right to infinity, since we do not actually specify or care what the upper bound is for the mean, as long as it is greater than 50. In the second case, we have the same case with regard to the confidence interval. However, our t-statistic and p-value have changed. In the calculation of the t-value, we subtract $\mu$ from our calculated mean. When t differs greatly from 0, our p-value will be larger. In this case, our p-value is greater than 0.05, so we do not reject the null hypothesis that the mean is equal to 51. **mention that the mean is closer to 51**
 
 **c)**
 ```{r}
@@ -80,11 +81,11 @@ wilcox.test(video, mu=50, alt="g")
 binom.test(sum(video<42), length(video), p=0.25, alt="l")
 ```
 
-First, we conduct a sign test to determine whether or not the median is greater than 50. Our null hypothesis is that the median is less than or equal to fifty, while our alternative hypothesis is that it is greater than 50. Since our resulting p-value is greater than 0.05, we do not reject the null hypothesis that the median is less than or equal to 50. 
+First, we conduct a sign test to determine whether or not the median is greater than 50. Our null hypothesis is that the median is less than or equal to fifty, while our alternative hypothesis is that it is greater than 50. Since our resulting p-value is greater than 0.05, we do not reject the null hypothesis that the median is less than or equal to 50.
 
-Secondly, we conduct a Wilcoxon signed rank test. Since our data is close to normal, we fulfill the requirement of a symmetric distribution. We follow the same hypotheses as the sign test above. However, since our p-value is much less than 0.05, we reject the null hypothesis in favor of the alternative. 
+Secondly, we conduct a Wilcoxon signed rank test. Since our data is close to normal, we fulfill the requirement of a symmetric distribution. We follow the same hypotheses as the sign test above. However, since our p-value is much less than 0.05, we reject the null hypothesis in favor of the alternative. **compare to b**
 
-To perform a test to check whether the fraction of the scores less than 42 is at most 25%, we can do a modified version of the sign test for medians, but instead compare the lower quartiles. In this case, we have a null hypothesis that the lower quartile is greater than or equal to 42 and an alternative hypothesis that it is less than or equal to 42. Since our p-value is much lower than 0.05, we reject the null hypothesis in favor of the alternative that in fact the fraction of scores less than 42 is at most 25%. 
+To perform a test to check whether the fraction of the scores less than 42 is at most 25%, we can do a modified version of the sign test for medians, but instead compare the lower quartiles. In this case, we have a null hypothesis that the lower quartile is greater than or equal to 42 and an alternative hypothesis that it is less than or equal to 42. Since our p-value is much lower than 0.05, we reject the null hypothesis in favor of the alternative that in fact the fraction of scores less than 42 is at most 25%.
 
 **d)**
 ```{r}
@@ -105,7 +106,7 @@ for (j in 0:100){
 }
 ```
 
-The values of $\mu$ for which the null hypothesis is not rejected are `r mus`. 
+The values of $\mu$ for which the null hypothesis is not rejected are `r mus`.
 
 ```{r}
 ks_mus = c()
@@ -118,7 +119,7 @@ suppressWarnings(for (j in 0:100){
 })
 ```
 
-The Kolmogorov-Smirnov test is applicable in this case since we have two independent samples: one from our dataset and one from our simulated normal distribution. In this case, we can conduct an experiment similar to that above. By using a Kolmogorov-Smirnov test, the values of $\mu$ for which the null hypothesis is not rejected are `r ks_mus`. 
+The Kolmogorov-Smirnov test is applicable in this case since we have two independent samples: one from our dataset and one from our simulated normal distribution. In this case, we can conduct an experiment similar to that above. By using a Kolmogorov-Smirnov test, the values of $\mu$ for which the null hypothesis is not rejected are `r ks_mus`.
 
 **e)**
 ```{r, fig.height=2.6, fig.width=6}
@@ -132,7 +133,8 @@ qqnorm(women_scores, main="Women's Scores Q-Q Plot"); qqnorm(men_scores, main="M
 #Two-sample t-test
 t.test(women_scores, men_scores)
 ```
-In order to conduct a two-sample t-test, we assume independence in our samples. In this case that is applicable, since we assume each player plays the game without confounding factors. We also assume normality in the data. According to our qq-plots, we see that the data points are almost linear, so we can carefully make this assumption. The results of the t-test indicate a p-value that is greater than 0.05, so we do not reject the null hypothesis that the mean values of the video game scores for men and women are different. 
+
+In order to conduct a two-sample t-test, we assume independence in our samples. In this case that is applicable, since we assume each player plays the game without confounding factors. We also assume normality in the data. According to our qq-plots, we see that the data points are almost linear, so we can carefully make this assumption. The results of the t-test indicate a p-value that is greater than 0.05, so we do not reject the null hypothesis that the mean values of the video game scores for men and women are different.
 
 ```{r}
 #Mann-Whitney test
@@ -141,7 +143,8 @@ wilcox.test(women_scores, men_scores)
 #Kolmogorov-Smirnov test
 ks.test(women_scores, men_scores)
 ```
-Similarly, the Mann-Whitney and Kolmogorov Smirnov tests assume independence of samples. In this case, both of these are applicable. In both cases, we find p-values that are greater than 0.05. For these tests, we do not reject the null hypothesis that the underlying distributions of these samples are different. In this case, the permutation test is not applicable because that requires paired samples, which these are not. 
+
+Similarly, the Mann-Whitney and Kolmogorov Smirnov tests assume independence of samples. In this case, both of these are applicable. In both cases, we find p-values that are greater than 0.05. For these tests, we do not reject the null hypothesis that the underlying distributions of these samples are different. In this case, the permutation test is not applicable because that requires paired samples, which these are not.
 
 **f)**
 ```{r}
