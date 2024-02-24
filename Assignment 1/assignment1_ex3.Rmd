@@ -52,7 +52,11 @@ $$\alpha_{1} = 0 \text{ (treatment parameterization) } \land \alpha_{2} = 0 \rig
 Recall that the main interest is in the effect of starter on acidity; factors position and batch represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting “fixed effects” model. Which starter(s) lead to significantly different acidity? Motivate your answer.
 
 ```{r}
-creamaov_fixed_sum <- lm(acidity ~ starter + batch, data=cream_sum)
+creamaov_fixed_sum <- lm(acidity ~ batch + starter, data=cream_sum)
+# TODO: check if we are setting the right things to be factors. Block variables shouldn't be set to be factors I think? See Lecture 6 Slide 24
+# TODO: supposedly everything is balanced here???
+# we place factor of interest starter last because treatment factors needs to come last. That's because the order is important if model is unbalanced (unsure, maybe the case here?) or for 2 continuous factors (not relevant here)
+# TODO: we could use drop1 to re-run all combinations so that the p-values will all be right
 
 # Visual normality check
 qqnorm(residuals(creamaov_fixed_sum))
@@ -101,15 +105,20 @@ The p-value of the Friedman test is `0.0755` which is slightly lower than the si
 Repeat c) by performing a mixed effects analysis, modeling the block variable(s) (if there are any) as a random effect by using the function lmer. (You will need to install the R-package lme4, which is not included in the standard distribution of R.) Compare your results to the results found by using the fixed effects model in c). Comment.
 
 ```{r}
+# TODO: run anova comparing two lmer models by excluding the factor of interest in one and keeping it in in the other - instead of just running anova on the mixed model as below
 library(lme4)
 mixedaov <- lmer(acidity ~ batch + starter + (1|position), data=cream_sum)
+mixedaov1 <- lmer(acidity ~ batch + (1|position), data=cream_sum)
 
 # Visual normality check
 qqnorm(residuals(mixedaov))
 plot(fitted(mixedaov), residuals(mixedaov))
 
-anova(mixedaov)
-summary(mixedaov)
+qqnorm(residuals(mixedaov1))
+plot(fitted(mixedaov1), residuals(mixedaov1))
+
+anova(mixedaov1, mixedaov)
+# summary(mixedaov)
 ```
 
-Using **`(1|position)`**, we allow the intercepts of the model to vary randomly across different levels of the factor *position*.
+Using **`(1|position)`**, we allow the intercepts of the model to vary randomly across different levels of the factor *position*. Comparing the mixed model without *starter* with the one including *starter* we get a p-value of `4.17e-09` which is significant so we confirm our results that *starter* is relevant for *acidity*.
