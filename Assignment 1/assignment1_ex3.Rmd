@@ -25,7 +25,17 @@ plot(fitted(creamaov_treatment), residuals(creamaov_treatment))
 
 anova(creamaov_treatment)
 summary(creamaov_treatment)
+
+starter_difference_p_value <- summary(creamaov_treatment)$coefficients[10,4]
 ```
+
+We perform a three-way ANOVA using treatment parameterization. To ensure our ANOVA results are valid, we inspect the QQ plot as well as fitted vs. residual plot to ensure normality. We pass this test based on the distribution visible there. We then look at the ANOVA coefficients to determine the significance of the means of our baseline scenario representing **starter1** and the level **starter2** sharing the same mean. As the p-value is `r starter_difference_p_value`, we presume that there is no significant difference between the effect of the two starters on acidity and assume they stem from the same distribution.
+
+$$\alpha_{1} = 0 \land \alpha_{2} = 0 \implies \mu_{starter=1}=\mu_{starter=2}  \text{ (for treatment parameterization) }$$
+
+### b)
+
+Recall that the main interest is in the effect of starter on acidity; factors position and batch represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting “fixed effects” model. Which starter(s) lead to significantly different acidity? Motivate your answer.
 
 ```{r}
 cream_sum <- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
@@ -34,22 +44,14 @@ contrasts(cream_sum$position) <- contr.sum
 contrasts(cream_sum$starter) <- contr.sum
 
 creamaov_sum <- lm(acidity ~ batch + position + starter, data=cream_sum)
-
-# Visual normality check, should not be needed as sum parameterization should not change the normality of the data
-qqnorm(residuals(creamaov_sum))
-plot(fitted(creamaov_sum), residuals(creamaov_sum))
-
 anova(creamaov_sum)
 summary(creamaov_sum)
+
+p_value_batch <- anova(creamaov_sum)$'Pr(>F)'[1]
+p_value_position <- anova(creamaov_sum)$'Pr(>F)'[2]
+p_value_starter <- anova(creamaov_sum)$'Pr(>F)'[3]
+p_value_batch3 <- summary(creamaov_sum)$coefficients[3,4]
 ```
-
-We perform a three-way ANOVA using treatment parameterization. To ensure our ANOVA results are valid, we inspect the QQ plot as well as fitted vs. residual plot to ensure normality. We pass this test based on the distribution visible there. We then look at the ANOVA coefficients to determine the significance of the means of our baseline scenario representing **starter1** and the level **starter2** sharing the same mean. As the p-value is *0.7538*, we presume that there is no significant difference between the effect of the two starters on acidity and assume they stem from the same distribution.
-
-$$\alpha_{1} = 0 \text{ (treatment parameterization) } \land \alpha_{2} = 0 \rightarrow \mu^{s}_{1}=\mu^{s}_{2}$$
-
-### b)
-
-Recall that the main interest is in the effect of starter on acidity; factors position and batch represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting “fixed effects” model. Which starter(s) lead to significantly different acidity? Motivate your answer.
 
 ```{r}
 creamaov_fixed_sum <- lm(acidity ~ batch + starter, data=cream_sum)
@@ -65,10 +67,11 @@ plot(fitted(creamaov_fixed_sum), residuals(creamaov_fixed_sum))
 anova(creamaov_fixed_sum)
 summary(creamaov_fixed_sum)
 ```
+Looking at the first sum parameterization ANOVA table using the full model, we find that the p-value for the factor *position* is `r p_value_position` and all its individual levels have coefficients corresponding to a p-value larger than `0.05` stating the lack of significance as main effect for the model. Due to the small size of the dataset, we are unable to thoroughly test for interactions, thus we will assume them to be negligible. In this case, we can remove the block variable *position* from the model to simplify.
 
-Looking at the sum parameterization ANOVA table of a), we find that the p-value for the factor *position* is `0.411191` and all individual levels have a p-value larger than `0.05` stating their lack of significance for the model. We can therefore remove the block variable *position* from the model. As the *batch* variable has a factor p-value of `0.001632` we can conclude that it is significant for the model and should be kept in our fixed effects model, further substantiated by a particularly relevant instance of **batch2** with p-value `0.000368`. The fixed effects model formula therefore becomes `acidity ~ starter + batch` ignoring interactions.
+As the *batch* variable has a factor p-value of `r p_value_batch` we can conclude that it is significant for the model and should be kept in our fixed effects model, further substantiated by a particularly deviating instance of **batch2** with p-value `r p_value_batch3`.
 
-In this model, we find that **starter3** and **starter4** have a very significant effect on acidity with p-values below `0.001`.
+The resulting fixed effects model formula therefore becomes `acidity ~ starter + batch` ignoring interactions. In this model, we find that **starter3** and **starter4** have a very significant effect on acidity with p-values both below `0.001`.
 
 # *TODO: What about starter5 in the sum paramterization model? What are we comparing here again? Double-check this makes sense.*
 
@@ -83,7 +86,7 @@ anova(creamaov_sum_auto)
 summary(creamaov_sum_auto)
 ```
 
-The step function utility further substantiates our previous results by also removing the insignificant block variable *position* from the model. The resulting model is the same as the one we found manually.
+Utilizing the step function utility in its default configuration further substantiates our previous results as the algorithm also removed the insignificant block variable *position* from the model. The resulting model of the algorithm is the same as the one we have established manually above.
 
 ### c)
 
@@ -94,9 +97,9 @@ friedman.test(acidity ~ starter | position, data=cream_sum) # alternative syntax
 # friedman.test(cream_sum$acidity, cream_sum$starter, cream_sum$position)
 ```
 
-Since each combination of batch and starter exists in the dataset and there are more than two levels of both factors, we can apply the Friedman test to test whether there is an effect of starter on acidity.
+Since each combination of batch and starter exists in the dataset and there are more than two levels of both factors, we can apply the Friedman test to test whether there is an effect of starter on acidity. The Friedman test does not assume normality either so it should be more robust, albeit less sensitive.
 
-The p-value of the Friedman test is `0.0755` which is slightly lower than the significance threshold of `0.05` and therefore we accept the null hypothesis that all means stem from the same distribution. So according to the Friedman test, we would conclude that there is no significant effect of starter on acidity.
+The p-value of the Friedman test is `0.0755` which is slightly lower than the significance threshold of `0.05` and therefore we accept the null hypothesis that all means stem from the same distribution. So according to the Friedman test, we would conclude that there is no significant effect of starter on acidity. This result may be due to the small sample size and the test's lack of sensitivity. The ANOVA test should provide us with more relevant insight, but this is a result worthy to be further investigated to check our methods.
 
 # *TODO: What is the difference between the Friedman test and the ANOVA test? Why do we get different results? Are we ignoring batch? Are we maybe not allowed to use it for some reason?*
 
@@ -105,20 +108,19 @@ The p-value of the Friedman test is `0.0755` which is slightly lower than the si
 Repeat c) by performing a mixed effects analysis, modeling the block variable(s) (if there are any) as a random effect by using the function lmer. (You will need to install the R-package lme4, which is not included in the standard distribution of R.) Compare your results to the results found by using the fixed effects model in c). Comment.
 
 ```{r}
-# TODO: run anova comparing two lmer models by excluding the factor of interest in one and keeping it in in the other - instead of just running anova on the mixed model as below
 library(lme4)
 mixedaov <- lmer(acidity ~ batch + starter + (1|position), data=cream_sum)
-mixedaov1 <- lmer(acidity ~ batch + (1|position), data=cream_sum)
+mixedaov_excluded <- lmer(acidity ~ batch + (1|position), data=cream_sum)
 
 # Visual normality check
 qqnorm(residuals(mixedaov))
 plot(fitted(mixedaov), residuals(mixedaov))
 
-qqnorm(residuals(mixedaov1))
-plot(fitted(mixedaov1), residuals(mixedaov1))
+qqnorm(residuals(mixedaov_excluded))
+plot(fitted(mixedaov_excluded), residuals(mixedaov_excluded))
 
-anova(mixedaov1, mixedaov)
-# summary(mixedaov)
+anova(mixedaov_excluded, mixedaov)
+p_significant <- anova(mixedaov_excluded, mixedaov)$'Pr(>Chisq)'[2]
 ```
 
-Using **`(1|position)`**, we allow the intercepts of the model to vary randomly across different levels of the factor *position*. Comparing the mixed model without *starter* with the one including *starter* we get a p-value of `4.17e-09` which is significant so we confirm our results that *starter* is relevant for *acidity*.
+Using **`(1|position)`**, we allow the intercepts of the model to vary randomly across different levels of the factor *position*. Comparing the mixed model without *starter* with the one including *starter* using ANOVA we get a p-value of `r p_significant`` which is significant so we confirm our previous ANOVA results and assumptions that *starter* is a relevant factor for *acidity*. Particularly noteworthy is the high significance of our result using the mixed model compared to the low significance of the Friedman test.
