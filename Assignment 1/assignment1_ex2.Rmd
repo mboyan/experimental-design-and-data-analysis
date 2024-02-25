@@ -11,6 +11,7 @@ In this exercise, the influence of varying amounts of antibacterial sulfamerazin
 hg_data = read.table("data/hemoglobin.txt", header=TRUE)
 head(hg_data)
 summary(hg_data)
+mu <- mean(hg_data$hemoglobin)
 ```
 
 The set consists of 80 entries. As can be read from the data, the administering of the treatment is conducted using two different methods, A and B, and in four types of doses, labeled 1, 2, 3 and 4 and corresponding to 0, 5, 10 and 15 g of the drug. The rate (dose) and method comprise the factors which will be analysed, and should therefore be transformed into factor datatypes.
@@ -22,7 +23,7 @@ a) Upon first inspection of the data, it could be identified that the sample in 
 ```{r}
 table(hg_data$rate, hg_data$method)
 ```
-It is thus evident that each factor combination contains $N=10$ experimental units. This makes the data suitable for a two-way ANOVA test on the factors `rate` and `method`. This exercise demonstrates through a simulation how such a balanced-design sample can be acquired from a large fish population. For this purpose, a population of $M=1000$ fish is generated, each assigned a random `rate` and `method` factor, and a hemoglobin level sampled from a normal distribution with a mean and a standard deviation equivalent to the mean and standard deviation of the original data set. The resulting data set is then sampled to obtain a balanced design of 80 fish, and the contingency table is calculated to verify the balance of the sample.
+It is thus evident that each factor combination contains $N=10$ experimental units. This makes the data suitable for a two-way ANOVA test on the factors `rate` and `method`. This exercise demonstrates through a simulation how such a balanced-design sample can be acquired from a large fish population. For this purpose, a population of $M=1000$ fish is generated, each assigned a random `rate` and `method` factor, and a hemoglobin level sampled from a normal distribution with a mean and a standard deviation equivalent to the mean and standard deviation of the original data set. The resulting data set is then sampled to obtain a balanced design of 80 fish with $N=10$ units per combination, and the contingency table is calculated to verify the balance of the sample.
 ```{r}
 set.seed(123)
 M=1000; I=4; J=2
@@ -53,29 +54,38 @@ model <- lm(hemoglobin~rate*method, data=hg_data); anova(model)
 ```
 The first observation to be made is whether the $H_{AB}$ hypothesis holds, i.e. whether an interaction between the two factors is absent. This is done by examining the p-value of the interaction term in the ANOVA table. In this case, $p=0.3769$, which is not significant at the 5% level, and thus the null hypothesis is not rejected. This suggests that there is no evidence for interaction between the two factors. Considering the separate effect of the factors, the p-value for the `rate` factor is below the significance level, indicating a rejection of the null-hypothesis, while the p-value of the `method` factor is above the significance level, indicating a failure to reject the null-hypothesis.
 
-To validate the test, the assumptions of the ANOVA test should be checked. The residuals of the model are examined for normality using a Q-Q-plot and are plotted against the fitted model values to ensure there is no pattern in the residuals.
+c) To validate the test, the assumptions of the ANOVA test should be checked. The residuals of the model are examined for normality using a Q-Q-plot and are plotted against the fitted model values to ensure there is no pattern in the residuals.
 ```{r}
 par(mfrow=c(1,2))
-qqnorm(residuals(model)); plot(fitted(model), residuals(model))
+qqnorm(residuals(model)); plot(fitted(model), residuals(model)); title("Residuals vs. Fitted")
 ```
-A qualitative inspection of the plots confirms that these assumptions are met to a satisfactory degree.
+A qualitative inspection of the plots confirms that these assumptions are met to a satisfactory degree. The validation of the model and the lack of significant interaction between the factors confirm that the indicated contribution of the `rate` factor is indeed representative for its greater effect on the response value `hemoglobin`.
 
-c) A closer look into the effect of the separate factors can be obtained by examining a summary of the model.
-```{r}
-summary(model)
-```
-This confirms the significance of the `rate` factor, as all p-values for its levels are below 0.05. Since the previous analysis showed no indication of interaction between the factors, it can be concluded that the `rate` factor has a greater effect on the hemoglobin levels than the `method` factor. Furthermore, the lack of significant interaction allows the use of an additive model, which allows more specific comparisons between the factor levels.
+Furthermore, the insignificance of the interaction allows the use of an additive model, which allows more specific comparisons between the factor levels. The `summary` function is used to extract the coefficients of the model.
 ```{r}
 model2 <- lm(hemoglobin~rate+method, data=hg_data); anova(model2)
 summary(model2)
 ```
-The first level of both factors is used as a reference level, implying that the corresponding $\alpha_1$ and $\beta_1$ contributions are equal to zero. As the hemoglobin level can be seen as the sum $Y_{i,j}=\mu+\alpha_i+\beta_j+e_{j,k}$, the highest yield can be calculated by adding the highest $\alpha_i$ and $\beta_j$ contributions to the mean $\mu$. From the summary it is evident that these are rate 2 (5g) and method B. Rate 2 therefore yields the highest mean hemoglobin level.
+Due to the treatment parameterization, the first level of both factors is used as a reference level, implying that the contributions $\alpha_1$ and $\beta_1$ contributions are equal to zero. As the hemoglobin levels can be seen as the sum $Y_{i,j}=\mu+\alpha_i+\beta_j+e_{j,k}$, the highest yield can be calculated by adding the highest $\alpha_i$ and $\beta_j$ contributions to the mean $\mu$. From the summary it is evident that these are rate 2 (5g) and method B. Rate 2 therefore yields the highest mean hemoglobin level: `r mu + summary(model2)$coefficients[2,1] + summary(model2)$coefficients[5,1]`. On the other hand, when extracting the `rate` and `method` factors for the highest hemoglobin measurement in the data set, the other method is present.: `r hg_data[which.max(hg_data$hemoglobin),]`
 
-Another sample measurement is the mean hemoglobin yield under a combination of rate 3 and method A. This can be calculated by adding the $\alpha_3$ and $\beta_1$ contributions to the mean $\mu$ through the following code:
+However, this does not show contradiction, as the `method` factor is not significant in this case. Rate 2, on the other hand, is confirmed as the highest yielding rate.
+
+Another sample measurement is the mean hemoglobin yield under a combination of rate 3 and method A. This can be calculated by adding the contributions $\alpha_3$ and $\beta_1$ (which is zero due to treatment parameterization) to the mean $\mu$ and obtaining `r mu + summary(model2)$coefficients[3,1]`.
+
+d) Ignoring the factor `method`, the effect of the different `rate` levels can be examined in more detail using a one-way ANOVA to test the null-hypothesis that hemoglobin levels are the same for all levels.
 ```{r}
-mu <- mean(hg_data$hemoglobin)
-print(mu)
-alpha3 <- summary(model2)$coefficients[3,1]
-beta1 <- summary(model2)$coefficients[5,1]
-mu + alpha3 + beta1
+model3 <- lm(hemoglobin~rate, data=hg_data); anova(model3)
+summary(model3)
 ```
+Once again, the p-value of the `rate` factor is below the significance level, indicating a rejection of the null-hypothesis. The estimated hemoglobin values for each rate are obtained from the summary: for rate 1: `r summary(model3)$coefficients[1,1]`, for rate 2: `r mu + summary(model3)$coefficients[2,1]`, for rate 3: `r mu + summary(model3)$coefficients[3,1]` and for rate 4: `r mu + summary(model3)$coefficients[4,1]`. Again, rate 2 is identified as the highest yielding one.
+
+Whether this test is valid, remains to be seen by checking the assumptions of the ANOVA test. The residuals of the model are examined for normality using a Q-Q-plot and are plotted against the fitted model values.
+```{r}
+par(mfrow=c(1,2))
+qqnorm(residuals(model3)); plot(fitted(model3), residuals(model3)); title("Residuals vs. Fitted")
+
+```
+
+The results shown in Q-Q plot indicate less normality than the previous analysis, which could be problematic for the correct interpretation of the test output.
+
+e) As an alternative, a Kruskal-Wallis test is performed to test the same null-hypothesis.
