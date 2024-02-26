@@ -1,0 +1,351 @@
+---
+title: "Group 3 - Assignment 1"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+## Exercise 1. Ice Cream
+
+### a)
+```{r, fig.height=2.6, fig.width=6}
+#Read in the data and extract the relevant column
+ice_cream=read.csv("data/Ice_cream.csv",header=TRUE) 
+video=ice_cream$video
+
+#Create relevant figures to assess distribution normality
+par(mfrow=c(1,3))
+hist(video, xlab="Video Game Scores", main="Scores Histogram"); boxplot(video, ylab="Video Game Scores", main="Scores Boxplot"); qqnorm(video, main="Video Scores Q-Q Plot")
+```
+
+The data for the video games scores appears to be close to normally distributed. Both the histogram and boxplot indicate that the scores are unimodal and moderately evenly distributed about the mean. The qq-plot confirms this as the data points are nearly linear. Hence, any testing or methods used with a normality assumption are justified.
+
+```{r}
+#Constructing a bounded 97% confidence interval 
+video_mean = mean(video)
+video_se = sd(video)/sqrt(length(video))
+alpha = 0.03
+degrees_freedom = length(video) - 1
+t_score = qt(p=alpha/2, df=degrees_freedom, lower.tail=F)
+margin_error = video_se * t_score
+lower_bound = video_mean - margin_error
+upper_bound = video_mean + margin_error
+```
+
+The bounds for the 97% confidence interval are [`r round(lower_bound, 4)`, `r round(upper_bound, 4)`].
+
+```{r}
+#Calculating the number of samples needed for a confidence interval of at most length 3
+desired_margin_error = 1.5
+z_score = qnorm(0.985)
+num_samples = ((z_score*sd(video))/desired_margin_error)^2
+```
+
+The number of samples needed for a confidence interval of at most length 3 is at least `r ceiling(num_samples)`.
+
+```{r}
+#Creating a bootstrapped 97% confidence interval
+B = 1000
+Tstar = numeric(B)
+for (i in 1:B) {
+  Xstar = sample(video, replace = TRUE) 
+  Tstar[i] = mean(Xstar)
+}
+Tstar015 = quantile(Tstar, 0.015)  #Lower bound
+Tstar985 = quantile(Tstar, 0.985)  #Upper bound
+
+confidence_interval = c(2*mean(video) - Tstar985, 2*mean(video) - Tstar015)
+```
+
+Our bootstrapped confidence interval is (`r round(confidence_interval[[1]], 4)`, `r round(confidence_interval[[2]], 4)`). We notice that this confidence interval is minutely smaller than the bounded confidence interval above. However, they are extremely similar. Since the data is already relatively normally distributed, the original confidence interval likely provides a good enough estimate and bootstrapping is unnecessary in this case.
+
+### b)
+```{r}
+#First t-test when mu_0 = 50
+t.test(video, mu=50, alt="g")
+
+#Second t-test when mu_0 = 51
+t.test(video, mu=51, alt="g")
+```
+
+Since the p-value for the first one-sided t-test when $\mu_{0}$ = 50 is less than 0.05, we would reject the null hypothesis that the mean video game score for the sample is equal to 50 in favor of the alternative hypothesis that it is greater than 50. Since we are doing a right-sided t-test, we have a confidence interval that extends to the left of the mean by the standard error amount, but to the right to infinity, since we do not actually specify or care what the upper bound is for the mean, as long as it is greater than 50. In the second case, we have the same case with regard to the confidence interval. However, our t-statistic and p-value have changed. In the calculation of the t-value, we subtract $\mu$ from our calculated mean. When t differs greatly from 0, our p-value will be larger. In this case, our p-value is greater than 0.05, so we do not reject the null hypothesis that the mean is equal to 51. We also notice that our actual mean is closer to 51 than it is to 50, so intuitively we would expect that we're more likely to accept the alternative hypothesis that the mean is larger than 50 than the alternative that the mean is larger than 51. 
+
+### c)
+```{r}
+binom.test(sum(video>50), length(video), p=0.5, alt="g")
+
+wilcox.test(video, mu=50, alt="g")
+
+binom.test(sum(video<42), length(video), p=0.25, alt="l")
+```
+
+First, we conduct a sign test to determine whether or not the median is greater than 50. Our null hypothesis is that the median is less than or equal to fifty, while our alternative hypothesis is that it is greater than 50. Since our resulting p-value is greater than 0.05, we do not reject the null hypothesis that the median is less than or equal to 50. This test does not align with out result from part b); however, in this case we are comparing medians and not means. In particular, with the sign test, we are not comparing the actual data values. Therefore, t-test is more sensitive to smaller deviations from the mean and any slight skewness. 
+
+Secondly, we conduct a Wilcoxon signed rank test. Since our data is close to normal, we fulfill the requirement of a symmetric distribution. We follow the same hypotheses as the sign test above. However, since our p-value is much less than 0.05, we reject the null hypothesis in favor of the alternative.
+
+To perform a test to check whether the fraction of the scores less than 42 is at most 25%, we can do a modified version of the sign test for medians, but instead compare the lower quartiles. In this case, we have a null hypothesis that the lower quartile is greater than or equal to 42 and an alternative hypothesis that it is less than or equal to 42. Since our p-value is much lower than 0.05, we reject the null hypothesis in favor of the alternative that in fact the fraction of scores less than 42 is at most 25%.
+
+### d)
+```{r}
+n=length(video)
+t=min(video)
+mus = c()
+B=1000; tstar=numeric(B)
+for (j in 0:100){
+  for (i in 1:B){
+  xstar=rnorm(200, mean=j, sd=10)
+  tstar[i]=min(xstar)
+  }
+  pl=sum(tstar<t)/B; pr=sum(tstar>t)/B
+  p=2*min(pl,pr)
+  if (p >= 0.05){
+    mus = c(mus, j)
+  }
+}
+```
+
+The values of $\mu$ for which the null hypothesis is not rejected are `r mus`.
+
+```{r}
+ks_mus = c()
+suppressWarnings(for (j in 0:100){
+  xstar=rnorm(200, mean=j, sd=10)
+  p = ks.test(video, xstar)[[2]]
+  if (p >= 0.05){
+    ks_mus = c(ks_mus, j)
+  }
+})
+```
+
+The Kolmogorov-Smirnov test is applicable in this case since we have two independent samples: one from our dataset and one from our simulated normal distribution. In this case, we can conduct an experiment similar to that above. By using a Kolmogorov-Smirnov test, the values of $\mu$ for which the null hypothesis is not rejected are `r ks_mus`.
+
+### e)
+```{r, fig.height=3.3, fig.width=6}
+#Extracting the boolean data for scores from women and men
+women_scores = ice_cream$video[ice_cream$female == 1]
+men_scores = ice_cream$video[ice_cream$female == 0]
+
+par(mfrow=c(1,2))
+qqnorm(women_scores, main="Women's Scores Q-Q Plot"); qqnorm(men_scores, main="Men's Scores Q-Q Plot")
+
+#Two-sample t-test
+t.test(women_scores, men_scores)
+```
+
+In order to conduct a two-sample t-test, we assume independence in our samples. In this case that is applicable, since we assume each player plays the game without confounding factors. We also assume normality in the data. According to our qq-plots, we see that the data points are almost linear, so we can carefully make this assumption. The results of the t-test indicate a p-value that is greater than 0.05, so we do not reject the null hypothesis that the mean values of the video game scores for men and women are different.
+
+```{r}
+#Mann-Whitney test
+wilcox.test(women_scores, men_scores)
+
+#Kolmogorov-Smirnov test
+ks.test(women_scores, men_scores)
+```
+
+Similarly, the Mann-Whitney and Kolmogorov Smirnov tests assume independence of samples. In this case, both of these are applicable. In both cases, we find p-values that are greater than 0.05. For these tests, we do not reject the null hypothesis that the underlying distributions of these samples are different. In this case, the permutation test is not applicable because that requires paired samples, which these are not.
+
+### f)
+```{r, fig.height=4, fig.width=4}
+puzzle=ice_cream$puzzle
+
+#Check normality for the puzzle scores
+qqnorm(puzzle, main="Puzzle Scores Q-Q Plot")
+cor.test(video, puzzle, method="spearman")
+```
+
+To use Pearson's correlation test, we need to first check the normality assumption for the puzzle score data, since we have already checked the assumption for the video game score data. The data looks more like a step function than a linear function, so the normality assumption is doubtful. It is then safer to use Spearman's correlation test, which does not assume normality. In this case, the null hypothesis is that the correlation coefficient is equal to 0, i.e. there is no correlation. Since our p-value for the Spearman test is much lower than 0.05, we reject the null hypothesis in favor of the alternative, that there is a significant correlation between the two samples.
+
+
+## Exercise 2. Hemoglobin in trout
+
+In this exercise, the influence of varying amounts of the antibacterial sulfamerazine on the hemoglobin levels in the blood of brown trout is explored. The statistical analysis is performed on the data set `hemoglobin.txt`, which is examined below.
+
+```{r}
+hg_data = read.table("data/hemoglobin.txt", header=TRUE)
+summary(hg_data)
+mu <- mean(hg_data$hemoglobin)
+```
+
+The set consists of 80 entries. As can be read from the data, the administering of the treatment is conducted using two different methods, A and B, and in four types of doses, labeled 1, 2, 3 and 4 and corresponding to 0, 5, 10 and 15 g of the drug. The rate (dose) and method are the factors which will be analysed, and should therefore be transformed into factor datatypes.
+```{r}
+hg_data$rate = as.factor(hg_data$rate); hg_data$method = as.factor(hg_data$method)
+```
+
+### a)
+Upon first inspection of the data, it could be identified that the sample in the data set exhibits _balanced design_, i.e. with an equal amount of observations per factor level combination. This can be verified by creating a contingency table of the counts at each factor level combination:
+```{r}
+table(hg_data$rate, hg_data$method)
+```
+It is evident that each factor combination contains $N=10$ experimental units. This makes the data suitable for a two-way ANOVA test on the factors `rate` and `method`. The code below simulates how such a balanced-design sample can be acquired from a large fish population. For this purpose, a population of $M=1000$ fish is generated, each assigned a random `rate` and `method` factor, and a hemoglobin level sampled from a normal distribution with a mean and a standard deviation equivalent to those of the original data set. The resulting data set is then sampled to obtain a balanced design of 80 fish with $N=10$ units per combination, and the contingency table is calculated to verify the balance of the sample.
+```{r}
+set.seed(123)
+M=1000; I=4; J=2
+
+# Generate population
+rates <- sample(1:I, M, replace=TRUE); methods <- sample(c('A', 'B'), M, replace=TRUE)
+hemoglobin <- rnorm(M, mean(hg_data$hemoglobin), sd(hg_data$hemoglobin))
+dummy_pop <- data.frame(rate=rates, method=methods, hemoglobin=hemoglobin)
+
+# Create factor combinations
+N=10
+dummy_pop$combos <- interaction(dummy_pop$rate, dummy_pop$method)
+combo_groups <- split(dummy_pop, dummy_pop$combos)
+
+# Sample balanced design
+balanced_groups <- lapply(combo_groups,
+                          function(group) group[sample(nrow(group),min(N, nrow(group))), ])
+balanced_data <- do.call(rbind, balanced_groups)
+balanced_data <- subset(balanced_data, select=-combos)
+
+# Verify balance
+table(balanced_data$rate, balanced_data$method)
+```
+### b)
+Using the provided data set, a two-way ANOVA test is performed to investigate the influence of the factors `rate` and `method` on the hemoglobin levels in the trout. The test is conducted by constructing a linear model from the two factors and using it as input for the `anova` function. By default, a treatment parameterization is used.
+```{r}
+model <- lm(hemoglobin~rate*method, data=hg_data); anova(model)
+```
+The first observation to be made is whether the $H_{AB}$ hypothesis holds, i.e. whether an interaction between the two factors is absent. This is done by examining the p-value of the interaction term in the ANOVA table. In this case, $p=0.3769$, which is not significant at the 5% level, and thus the null hypothesis is not rejected. This suggests that there is no evidence for interaction between the two factors. Considering the separate effect of the factors, the p-value for the `rate` factor is below the significance level, indicating a rejection of the null-hypothesis, while the p-value of the `method` factor is above the significance level, indicating a failure to reject the null-hypothesis.
+
+### c)
+To validate the test, the assumptions of the ANOVA test should be checked. The residuals of the model are examined for normality using a Q-Q-plot and are plotted against the fitted model values to ensure there is no pattern in the residuals.
+```{r fig.height = 3.3, fig.width = 6, fig.align = "center"}
+par(mfrow=c(1,2))
+qqnorm(residuals(model)); plot(fitted(model), residuals(model)); title("Residuals vs. Fitted")
+```
+A qualitative inspection of the plots confirms that these assumptions are met to a satisfactory degree. The validation of the model and the lack of significant interaction between the factors confirm that the indicated contribution of the `rate` factor is indeed representative for its greater effect on the response value `hemoglobin`.
+
+Furthermore, the insignificance of the interaction allows the use of an additive model, which allows more specific comparisons between the factor levels. The `summary` function is used to extract the coefficients of the model.
+```{r}
+model2 <- lm(hemoglobin~rate+method, data=hg_data); invisible(anova(model2))
+summary(model2)
+```
+Due to the treatment parameterization, the first level of both factors is used as a reference level, so the contributions $\alpha_1$ and $\beta_1$ contributions are equal to zero. As the hemoglobin levels can be seen as the sum $Y_{i,j}=\mu+\alpha_i+\beta_j+e_{j,k}$, the highest yield can be calculated by adding the highest $\alpha_i$ and $\beta_j$ contributions to the mean $\mu$. From the summary it is evident that these are rate 2 (5g dose) and method B. On the other hand, when extracting the `rate` and `method` factors for the highest hemoglobin measurement in the data set, the other method is present.: `r hg_data[which.max(hg_data$hemoglobin),]` However, this does not show contradiction, as the `method` factor is not significant in this case. Rate 2, on the other hand, is confirmed as the highest yielding rate, resulting in a mean hemoglobin level of `r mu + summary(model2)$coefficients[2,1] + summary(model2)$coefficients[5,1]`.
+
+Another sample measurement is the mean hemoglobin yield under a combination of rate 3 and method A. This can be calculated by adding the contributions $\alpha_3$ and $\beta_1$ (which is zero due to treatment parameterization) to the mean $\mu$ and obtaining `r mu + summary(model2)$coefficients[3,1]`.
+
+### d)
+Ignoring the factor `method`, the effect of the different `rate` levels can be examined in more detail using a one-way ANOVA to test the null-hypothesis that hemoglobin levels are the same for all levels.
+```{r}
+model3 <- lm(hemoglobin~rate, data=hg_data); anova(model3)
+summary(model3)
+```
+Once again, the p-value of the `rate` factor is below the significance level, indicating a rejection of the null-hypothesis. The estimated hemoglobin values for each rate are obtained from the summary: for rate 1: `r summary(model3)$coefficients[1,1]`, for rate 2: `r mu + summary(model3)$coefficients[2,1]`, for rate 3: `r mu + summary(model3)$coefficients[3,1]` and for rate 4: `r mu + summary(model3)$coefficients[4,1]`. Again, rate 2 is identified as the highest yielding one.
+
+Whether this test is valid, remains to be seen by checking the assumptions of the ANOVA test. The residuals of the model are examined for normality using a Q-Q-plot and are plotted against the fitted model values.
+```{r fig.height = 3.3, fig.width = 6, fig.align = "center"}
+par(mfrow=c(1,2))
+qqnorm(residuals(model3)); plot(fitted(model3), residuals(model3)); title("Residuals vs. Fitted")
+
+```
+
+Even though a linear relationship between the theoretical and sample quantiles is visible, the tails show a more extreme deviation the QQ-plot of the two-way ANOVA, casting doubts on the normality assumption. This could be problematic for the correct interpretation of the test output.
+
+### e)
+As an alternative, a Kruskal-Wallis test is performed to test the same null-hypothesis, as it operates with ranks and does not assume normality.
+```{r}
+kruskal.test(hg_data$hemoglobin, hg_data$rate)
+```
+The resulting p-value is far below the significance level, indicating a rejection of the null-hypothesis and confirming the indication from the one-way ANOVA test that the hemoglobin levels differ across the rate levels. Given the questionable normality of the residuals, the Kruskal-Wallis test is a more robust alternative. However, it provides less detailed insight into the differences between the rate levels, as it uses a more generalised test statistic about the group medians and does not involve the more sophisticated model fitting of ANOVA.
+
+
+## Exercise 3. Sour Cream
+
+Interesting facts not relevant to subquestions directly:
+
+-   as we have only one sample per combination of factors, we should not test for interactions. However, we can still test for main effects.
+
+### a)
+
+Analyze the data in a three-way experiment without interactions with acidity as response and starter, batch and position as factors. By using summary command, can you tell whether there is a significant difference between the effects of starter 1 and starter 2 on acidity? Motivate your answer.
+
+```{r}
+data <- read.csv("data/cream.txt", sep="", header=TRUE)
+cream_treatment <- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
+
+creamaov_treatment <- lm(acidity ~ batch + position + starter, data=cream_treatment)
+
+# Visual normality check
+qqnorm(residuals(creamaov_treatment))
+plot(fitted(creamaov_treatment), residuals(creamaov_treatment))
+
+anova(creamaov_treatment)
+summary(creamaov_treatment)
+
+starter_difference_p_value <- summary(creamaov_treatment)$coefficients[10,4]
+```
+
+We perform a three-way ANOVA using treatment parameterization. To ensure our ANOVA results are valid, we inspect the QQ plot as well as fitted vs. residual plot to ensure normality. We pass this test based on the distribution visible there. We then look at the ANOVA coefficients to determine the significance of the means of our baseline scenario representing **starter1** and the level **starter2** sharing the same mean. As the p-value is `r starter_difference_p_value`, we presume that there is no significant difference between the effect of the two starters on acidity and assume they stem from the same distribution.
+
+$$\alpha_{1} = 0 \land \alpha_{2} = 0 \implies \mu_{starter=1}=\mu_{starter=2}  \text{ (for treatment parameterization) }$$
+
+### b)
+
+Recall that the main interest is in the effect of starter on acidity; factors position and batch represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting “fixed effects” model. Which starter(s) lead to significantly different acidity? Motivate your answer.
+
+```{r}
+cream_sum <- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
+contrasts(cream_sum$batch) <- contr.sum
+contrasts(cream_sum$position) <- contr.sum
+contrasts(cream_sum$starter) <- contr.sum
+
+creamaov_sum <- lm(acidity ~ batch + position + starter, data=cream_sum)
+anova(creamaov_sum)
+summary(creamaov_sum)
+
+p_value_batch <- anova(creamaov_sum)$'Pr(>F)'[1]
+p_value_position <- anova(creamaov_sum)$'Pr(>F)'[2]
+p_value_starter <- anova(creamaov_sum)$'Pr(>F)'[3]
+p_value_batch3 <- summary(creamaov_sum)$coefficients[3,4]
+```
+
+```{r}
+creamaov_fixed_sum <- lm(acidity ~ batch + starter, data=cream_sum)
+# TODO: check if we are setting the right things to be factors. Block variables shouldn't be set to be factors I think? See Lecture 6 Slide 24
+# TODO: supposedly everything is balanced here???
+# we place factor of interest starter last because treatment factors needs to come last. That's because the order is important if model is unbalanced (unsure, maybe the case here?) or for 2 continuous factors (not relevant here)
+# TODO: we could use drop1 to re-run all combinations so that the p-values will all be right
+
+# Visual normality check
+qqnorm(residuals(creamaov_fixed_sum))
+plot(fitted(creamaov_fixed_sum), residuals(creamaov_fixed_sum))
+
+anova(creamaov_fixed_sum)
+summary(creamaov_fixed_sum)
+```
+Looking at the first sum parameterization ANOVA table using the full model, we find that the p-value for the factor *position* is `r p_value_position` and all its individual levels have coefficients corresponding to a p-value larger than `0.05` stating the lack of significance as main effect for the model. Due to the small size of the dataset, we are unable to thoroughly test for interactions, thus we will assume them to be negligible. In this case, we can remove the block variable *position* from the model to simplify.
+
+As the *batch* variable has a factor p-value of `r p_value_batch` we can conclude that it is significant for the model and should be kept in our fixed effects model, further substantiated by a particularly deviating instance of **batch2** with p-value `r p_value_batch3`.
+
+The resulting fixed effects model formula therefore becomes `acidity ~ starter + batch` ignoring interactions. In this model, we find that **starter3** and **starter4** have a very significant effect on acidity with p-values both below `0.001`.
+
+# *TODO: What about starter5 in the sum paramterization model? What are we comparing here again? Double-check this makes sense.*
+
+```{r}
+creamaov_sum_auto <- step(creamaov_sum)
+
+# Visual normality check
+qqnorm(residuals(creamaov_sum_auto))
+plot(fitted(creamaov_sum_auto), residuals(creamaov_sum_auto))
+
+anova(creamaov_sum_auto)
+summary(creamaov_sum_auto)
+```
+
+Utilizing the step function utility in its default configuration further substantiates our previous results as the algorithm also removed the insignificant block variable *position* from the model. The resulting model of the algorithm is the same as the one we have established manually above.
+
+### c)
+
+For the resulting model from c), can we also apply the Friedman test to test whether there is an effect of starter on acidity?
+
+```{r}
+friedman.test(acidity ~ starter | position, data=cream_sum) # alternative syntax
+# friedman.test(cream_sum$acidity, cream_sum$starter, cream_sum$position)
+```
+
+Since each combination of batch and starter exists in the dataset and there are more than two levels of both factors, we can apply the Friedman test to test whether there is an effect of starter on acidity. The Friedman test does not assume normality either so it should be more robust, albeit less sensitive.
+
+The p-value of the Friedman test is `0.0755` which is slightly lower than the significance threshold of `0.05` and therefore we accept the null hypothesis that all means stem from the same distribution. So according to the Friedman test, we would conclude that there is no significant effect of starter on acidity. This result may be due to the small sample size and the test's lack of sensitivity. The ANOVA test should provide us with more relevant insight, but this is a result worthy to be further investigated to check our methods.
+
+# *TODO: What is the difference between the Friedman test and the ANOVA test? Why do we get different results? Are we ignoring batch? Are we maybe not allowed to use it for some reason?*
+

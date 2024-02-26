@@ -58,7 +58,7 @@ The first observation to be made is whether the $H_{AB}$ hypothesis holds, i.e. 
 
 ### c)
 To validate the test, the assumptions of the ANOVA test should be checked. The residuals of the model are examined for normality using a Q-Q-plot and are plotted against the fitted model values to ensure there is no pattern in the residuals.
-```{r fig1, fig.height = 4, fig.width = 8, fig.align = "center"}
+```{r fig.height = 3.3, fig.width = 6, fig.align = "center"}
 par(mfrow=c(1,2))
 qqnorm(residuals(model)); plot(fitted(model), residuals(model)); title("Residuals vs. Fitted")
 ```
@@ -82,7 +82,7 @@ summary(model3)
 Once again, the p-value of the `rate` factor is below the significance level, indicating a rejection of the null-hypothesis. The estimated hemoglobin values for each rate are obtained from the summary: for rate 1: `r summary(model3)$coefficients[1,1]`, for rate 2: `r mu + summary(model3)$coefficients[2,1]`, for rate 3: `r mu + summary(model3)$coefficients[3,1]` and for rate 4: `r mu + summary(model3)$coefficients[4,1]`. Again, rate 2 is identified as the highest yielding one.
 
 Whether this test is valid, remains to be seen by checking the assumptions of the ANOVA test. The residuals of the model are examined for normality using a Q-Q-plot and are plotted against the fitted model values.
-```{r fig2, fig.height = 4, fig.width = 8, fig.align = "center"}
+```{r fig.height = 3.3, fig.width = 6, fig.align = "center"}
 par(mfrow=c(1,2))
 qqnorm(residuals(model3)); plot(fitted(model3), residuals(model3)); title("Residuals vs. Fitted")
 
