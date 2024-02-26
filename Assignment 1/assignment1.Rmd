@@ -309,14 +309,15 @@ summary(creamaov_treatment)
 starter2_p_value <- summary(creamaov_treatment)$coefficients[10,4]
 ```
 
-We pass this normality test based on the near-linear distribution in the QQ plot and the lack of patterns visible in the fitted vs. residuals plot. We then proceed to inspect ANOVA coefficients to determine the significance of our baseline scenario $\mu_1 = \mu + \alpha_1 + \beta_1 + \gamma_1 = \mu$ and the mean of level **starter2** $\mu_2 = \mu + \alpha_1 + \beta_1 + \gamma_2 = \mu + \gamma_2$ sharing the same mean $\mu_1 = \mu_2$ i.e. $\gamma_2 = 0$. As the p-value of this coefficient is `r starter2_p_value` and larger than $\alpha = 0.05$, we state that there is no significant difference between the means of the two starters on acidity and assume they stem from the same distribution.
+We pass this normality test based on the near-linear distribution in the QQ plot and the lack of patterns visible in the fitted vs. residuals plot. We then proceed to inspect ANOVA coefficients to determine the significance of our baseline scenario $\mu_1 = \mu + \alpha_1 + \beta_1 + \gamma_1 = \mu$ and the mean of level **starter2** $\mu_2 = \mu + \alpha_1 + \beta_1 + \gamma_2 = \mu + \gamma_2$ sharing the same mean $\mu_1 = \mu_2$ i.e. $\gamma_2 = 0$. As the p-value of this coefficient is `r round(starter2_p_value, 5)` and larger than $\alpha = 0.05$, we state that there is no significant difference between the means of the two starters on acidity and assume they stem from the same distribution.
 
 ### b)
 
 As we have no traditional baseline scenario in our dataset, we will be using the sum parameterization for all following ANOVA tests as these lend themselves to be more intuitive coefficients for our analysis.
 
 ```{r, results='hide'}
-cream_sum <- data.frame(acidity=data[,1], batch=factor(data[,2]), position=factor(data[,3]), starter=factor(data[,4]))
+cream_sum <- data.frame(acidity=data[,1], batch=factor(data[,2]), 
+                        position=factor(data[,3]), starter=factor(data[,4]))
 contrasts(cream_sum$batch) <- contr.sum
 contrasts(cream_sum$position) <- contr.sum
 contrasts(cream_sum$starter) <- contr.sum
@@ -331,9 +332,9 @@ p_value_starter <- anova(creamaov_sum)$'Pr(>F)'[3]
 p_value_batch2 <- summary(creamaov_sum)$coefficients[3,4]
 ```
 
-Looking at the sum parameterization ANOVA table using the full model, we find that the p-value for the factor *position* is `r p_value_position` and all its individual levels have coefficients corresponding to a p-value larger than `0.05`, stating a lack of significance as main effect for the model. Due to the small size of the dataset, we are unable to thoroughly test for interactions, thus we will assume them to be negligible from here on. In this case, we can remove the variable *position* from the model to simplify.
+Looking at the sum parameterization ANOVA table using the full model, we find that the p-value for the factor *position* is `r round(p_value_position, 5)` and all its individual levels have coefficients corresponding to a p-value larger than `0.05`, stating a lack of significance as main effect for the model. Due to the small size of the dataset, we are unable to thoroughly test for interactions, thus we will assume them to be negligible from here on. In this case, we can remove the variable *position* from the model to simplify.
 
-As the *batch* factor has a p-value of `r p_value_batch` below $\alpha = 0.05$ we can conclude that it is significant for the model and should be kept in our fixed effects model, further substantiated by a particularly deviating instance of **batch2** with p-value `r p_value_batch2`.
+As the *batch* factor has a p-value of `r round(p_value_batch, 5)` below $\alpha = 0.05$ we can conclude that it is significant for the model and should be kept in our fixed effects model, further substantiated by a particularly deviating instance of **batch2** with p-value `r round(p_value_batch2, 5)`.
 
 The resulting fixed effects model formula therefore becomes `acidity ~ starter + batch` ignoring interactions and its analysis can be found below.
 
@@ -375,11 +376,11 @@ friedman_test <- friedman.test(acidity ~ starter | batch, data=cream_sum)
 p_value_friedman <- friedman_test$p.value
 ```
 
-The p-value of the Friedman test is `r p_value_friedman` which is lower than the confidence level of $\alpha = 0.05$ and therefore we reject the null hypothesis that the means stem from the same distribution and instead agree with prior results that there is a significant effect of *starter* on *acidity*.
+The p-value of the Friedman test is `r round(p_value_friedman, 5)` which is lower than the confidence level of $\alpha = 0.05$ and therefore we reject the null hypothesis that the means stem from the same distribution and instead agree with prior results that there is a significant effect of *starter* on *acidity*.
 
 ### d)
 
-```{r, fig.height=4, fig.width=14, results='hide'}
+```{r, fig.height=4, fig.width=14, results='hide', warning=FALSE}
 library(lme4)
 
 # Check if starter has an effect on acidity
@@ -403,4 +404,4 @@ p_signif_diff_pos <- anova(mixedaov_2_pos, mixedaov_1_pos)$'Pr(>Chisq)'[2]
 p_signif_diff <- anova(mixedaov_2, mixedaov_1)$'Pr(>Chisq)'[2]
 ```
 
-In the Q-Q plot, we seem to have stronger skewing of the distribution but taking into account slight outliers, it still roughly follows a normal distribution. Using the **`(1|position)`** notation, we allow the intercepts of the model to vary randomly across different levels of the factor *position* in our model. Comparing the mixed model with the factor *starter* included conventionally versus as random effect using ANOVA we find a p-value of `r p_signif_diff` which is significant thus we confirm our previous ANOVA results and assumptions that *starter* is a relevant factor for *acidity*. The results are similar with a p-value of `r p_signif_diff_pos` when removing the insignificant factor *position* from the model.
+In the Q-Q plot, we seem to have stronger skewing of the distribution but taking into account slight outliers, it still roughly follows a normal distribution. Using the **`(1|position)`** notation, we allow the intercepts of the model to vary randomly across different levels of the factor *position* in our model. Comparing the mixed model with the factor *starter* included conventionally versus as random effect using ANOVA we find a p-value of `r round(p_signif_diff, 5)` which is significant thus we confirm our previous ANOVA results and assumptions that *starter* is a relevant factor for *acidity*. The results are similar with a p-value of `r round(p_signif_diff_pos, 5)` when removing the insignificant factor *position* from the model.
