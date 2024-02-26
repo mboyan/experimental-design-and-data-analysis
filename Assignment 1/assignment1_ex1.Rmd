@@ -1,9 +1,9 @@
 ---
 title: "R Notebook"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
   html_notebook: default
 ---
 
@@ -147,7 +147,7 @@ ks.test(women_scores, men_scores)
 Similarly, the Mann-Whitney and Kolmogorov Smirnov tests assume independence of samples. In this case, both of these are applicable. In both cases, we find p-values that are greater than 0.05. For these tests, we do not reject the null hypothesis that the underlying distributions of these samples are different. In this case, the permutation test is not applicable because that requires paired samples, which these are not.
 
 **f)**
-```{r}
+```{r, fig.height=2.6, fig.width=3}
 puzzle=ice_cream$puzzle
 
 #Check normality for the puzzle scores
