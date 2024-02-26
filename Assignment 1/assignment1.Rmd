@@ -5,9 +5,8 @@ output:
   html_notebook: default
 ---
 
-**Experimental Design and Data Analysis, VU Amsterdam (2024)**
-
-_Group 3: Sophie Engels, Boyan Mihaylov and Jonas Schäfer_
+_**Group 3**: Sophie Engels, Boyan Mihaylov and Jonas Schäfer_   
+_Experimental Design and Data Analysis, VU Amsterdam (2024)_
 
 ## Exercise 1. Ice Cream
 
