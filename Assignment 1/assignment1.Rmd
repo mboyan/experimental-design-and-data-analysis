@@ -309,7 +309,7 @@ summary(creamaov_treatment)
 starter2_p_value <- summary(creamaov_treatment)$coefficients[10,4]
 ```
 
-We pass this normality test based on the near-linear distribution in the QQ plot and the lack of patterns visible in the fitted vs. residuals plot. We then proceed to inspect ANOVA coefficients to determine the significance of our baseline scenario $\mu_1 = \mu + \alpha_1 + \beta_1 + \gamma_1 = \mu$ and the mean of level **starter2** $\mu_2 = \mu + \alpha_1 + \beta_1 + \gamma_2 = \mu + \gamma_2$ sharing the same mean $\mu_1 = \mu_2$ i.e. $\gamma_2 = 0$. As the p-value of this coefficient is `r round(starter2_p_value, 5)` and larger than $\alpha = 0.05$, we state that there is no significant difference between the means of the two starters on acidity and assume they stem from the same distribution.
+We pass this normality test based on the near-linear distribution in the Q-Q plot and the lack of patterns visible in the fitted vs. residuals plot. We then proceed to inspect ANOVA coefficients to determine the significance of our baseline scenario $\mu_1 = \mu + \alpha_1 + \beta_1 + \gamma_1 = \mu$ and the mean of level **starter2** $\mu_2 = \mu + \alpha_1 + \beta_1 + \gamma_2 = \mu + \gamma_2$ sharing the same mean $\mu_1 = \mu_2$ i.e. $\gamma_2 = 0$. As the p-value of this coefficient is `r round(starter2_p_value, 5)` and larger than $\alpha = 0.05$, we state that there is no significant difference between the means of the two starters on acidity and assume they stem from the same distribution.
 
 ### b)
 
@@ -331,7 +331,6 @@ p_value_position <- anova(creamaov_sum)$'Pr(>F)'[2]
 p_value_starter <- anova(creamaov_sum)$'Pr(>F)'[3]
 p_value_batch2 <- summary(creamaov_sum)$coefficients[3,4]
 ```
-
 Looking at the sum parameterization ANOVA table using the full model, we find that the p-value for the factor *position* is `r round(p_value_position, 5)` and all its individual levels have coefficients corresponding to a p-value larger than `0.05`, stating a lack of significance as main effect for the model. Due to the small size of the dataset, we are unable to thoroughly test for interactions, thus we will assume them to be negligible from here on. In this case, we can remove the variable *position* from the model to simplify.
 
 As the *batch* factor has a p-value of `r round(p_value_batch, 5)` below $\alpha = 0.05$ we can conclude that it is significant for the model and should be kept in our fixed effects model, further substantiated by a particularly deviating instance of **batch2** with p-value `r round(p_value_batch2, 5)`.
@@ -349,7 +348,6 @@ plot(fitted(creamaov_fixed_sum), residuals(creamaov_fixed_sum))
 anova(creamaov_fixed_sum)
 summary(creamaov_fixed_sum)
 ```
-
 After passing the somewhat skewed but still rather normallt distribution in the Q-Q plot, using this model in the ANOVA analysis we find that coefficients for **starter3** and **starter4** substantiate a very significant effect on *acidity* with confidence level below $\alpha^{***} = 0.001$. To further substantiate our results, we will use the algorithmic step function and compare if its resulting model is consistent with our manual assessment.
 
 ```{r, fig.height=4, fig.width=8, results='hide'}
