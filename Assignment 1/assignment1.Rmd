@@ -384,8 +384,10 @@ The p-value of the Friedman test is `r round(p_value_friedman, 5)` which is lowe
 library(lme4)
 
 # Check if starter has an effect on acidity
-mixedaov_1_pos <- lmer(acidity ~ batch + starter + (1|position), data=cream_sum)
-mixedaov_2_pos <- lmer(acidity ~ batch + (1|starter) + (1|position), data=cream_sum)
+mixedaov_1_pos <- lmer(acidity ~ batch + starter + (1|position), 
+                       data=cream_sum)
+mixedaov_2_pos <- lmer(acidity ~ batch + (1|starter) + (1|position), 
+                       data=cream_sum)
 
 # Visual normality check
 par(mfrow=c(1,4))
