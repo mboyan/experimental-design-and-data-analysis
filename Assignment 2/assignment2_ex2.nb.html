@@ -1754,10 +1754,30 @@ display: none;
 <!-- rnb-text-begin -->
 <div id="exercise-2.-birthweights" class="section level2">
 <h2>Exercise 2. Birthweights</h2>
+<p>This exercise explores the data set <code>Birthweight.csv</code>
+which contains information on new born babies and their parents. A first
+examination reveals the following variables:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmlydGh3ZWlnaHQgPC0gcmVhZC5jc3YoXCJkYXRhL0JpcnRod2VpZ2h0LmNzdlwiKVxuaGVhZChiaXJ0aHdlaWdodClcbmBgYCJ9 -->
+<pre class="r"><code>birthweight &lt;- read.csv(&quot;data/Birthweight.csv&quot;)
+head(birthweight)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibnJvdyI6NiwibmNvbCI6MTYsInN1bW1hcnkiOltdfSwicmRmIjoiSDRzSUFBQUFBQUFBQnBXU1BXL1VRQkNHOTN5Mnd4bHlaMGdrUGlTQ1JJQWtpTHNpcHlCQUNyS2lFd2tTQlNDUTBtN3M5WWZpTDJ3bkIxUTArU05FVktCUWdFUW8rQXUwMU5UOEFhckE2N3ZaNExORWtaVWU3Y3k4TytQWldUOGRiUGFOVFlNeDFtUnFVMkZORFNiVG5qOTcwTDNEbUtyQWFUQ1Z0Y3I5SlE3TndEREJOTkJ4OERGaXY2Rjl4K0Y5eHBRbGhKMS9Pa01SdGdMdTBYNGI5RUc3MUsxei9kR3l6cTRmekw3K3VXR1o3bWhaSnZtZHZibkRKNy8yckU2Ni84TllmVkdwZXhWY0F3dmdCcmhPdTlSdmdVV3dSUGJObXY2L0pmVlpVTjUxbnV3TDRQSUo4dCtDOStBRE9BQWZ3YnVLZmhmY3A3a013QnBZcmVqbjZmdFh3Q1V3UjdiVXl4YzdRMi9ScnRoU242ZCtMaEwxL2o2QkwrQXIrQVlPd2VjVDNFK3V4cVE4OGNOb01ZOUVUbzJaRkZRZURzalNING5ZSzN6eVRxOEZXZUVQUmVENUJZVk9iUWp1MkVGbWs5OWFGM25CaXlDSlpZVThTclpGUnA0YWNVOUlKWW9UTy9ESW00cjhhbDB0U3RPaGRGUzNrdVVLNTFXV0gzc1ROZHlKR25xWURMZU9pK2pscC9zcnRmdTNzbVRZa3pNb0I2ZThHVTlKcncvS0Rua3VCeVdEaHNNTDNuTXo1TU03cXFWTUpXazVDQ1FwTS9RazFlUkdWZ3QwZHVLeUU2ZHIrenZ4ZG5lNUpqZlQyR1BqdjZwQlROT3VWMnh6M0lYeWg5SjFlWCs4WkJETE1Xb2gzeEtock95SVhUTGJtTWRvSEwwMEMySTVPd1BSdkZja0JaY3BocDJFTWpLNk9UdjZDNFB6OWhXbkJBQUEifQ== -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["ID"],"name":[1],"type":["int"],"align":["right"]},{"label":["Length"],"name":[2],"type":["int"],"align":["right"]},{"label":["Birthweight"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Headcirc"],"name":[4],"type":["int"],"align":["right"]},{"label":["Gestation"],"name":[5],"type":["int"],"align":["right"]},{"label":["smoker"],"name":[6],"type":["int"],"align":["right"]},{"label":["mage"],"name":[7],"type":["int"],"align":["right"]},{"label":["mnocig"],"name":[8],"type":["int"],"align":["right"]},{"label":["mheight"],"name":[9],"type":["int"],"align":["right"]},{"label":["mppwt"],"name":[10],"type":["int"],"align":["right"]},{"label":["fage"],"name":[11],"type":["int"],"align":["right"]},{"label":["fedyrs"],"name":[12],"type":["int"],"align":["right"]},{"label":["fnocig"],"name":[13],"type":["int"],"align":["right"]},{"label":["fheight"],"name":[14],"type":["int"],"align":["right"]},{"label":["lowbwt"],"name":[15],"type":["int"],"align":["right"]},{"label":["mage35"],"name":[16],"type":["int"],"align":["right"]}],"data":[{"1":"1360","2":"56","3":"4.55","4":"34","5":"44","6":"0","7":"20","8":"0","9":"162","10":"57","11":"23","12":"10","13":"35","14":"179","15":"0","16":"0","_rn_":"1"},{"1":"1016","2":"53","3":"4.32","4":"36","5":"40","6":"0","7":"19","8":"0","9":"171","10":"62","11":"19","12":"12","13":"0","14":"183","15":"0","16":"0","_rn_":"2"},{"1":"462","2":"58","3":"4.10","4":"39","5":"41","6":"0","7":"35","8":"0","9":"172","10":"58","11":"31","12":"16","13":"25","14":"185","15":"0","16":"1","_rn_":"3"},{"1":"1187","2":"53","3":"4.07","4":"38","5":"44","6":"0","7":"20","8":"0","9":"174","10":"68","11":"26","12":"14","13":"25","14":"189","15":"0","16":"0","_rn_":"4"},{"1":"553","2":"54","3":"3.94","4":"37","5":"42","6":"0","7":"24","8":"0","9":"175","10":"66","11":"30","12":"12","13":"0","14":"184","15":"0","16":"0","_rn_":"5"},{"1":"1636","2":"51","3":"3.93","4":"38","5":"38","6":"0","7":"29","8":"0","9":"165","10":"61","11":"31","12":"16","13":"0","14":"180","15":"0","16":"0","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10],"total":[16]},"rows":{"min":[10],"max":[10],"total":[6]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>For the first part of the analysis, the column
+<code>Birthweight</code> is selected as a response variable</p>
 <!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkFzc2lnbm1lbnQgMiAtIEV4ZXJjaXNlIDIiDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIyBFeGVyY2lzZSAyLiBCaXJ0aHdlaWdodHMNCg0K</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkFzc2lnbm1lbnQgMiAtIEV4ZXJjaXNlIDIiDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIyBFeGVyY2lzZSAyLiBCaXJ0aHdlaWdodHMNCg0KVGhpcyBleGVyY2lzZSBleHBsb3JlcyB0aGUgZGF0YSBzZXQgYEJpcnRod2VpZ2h0LmNzdmAgd2hpY2ggY29udGFpbnMgaW5mb3JtYXRpb24gb24gbmV3IGJvcm4gYmFiaWVzIGFuZCB0aGVpciBwYXJlbnRzLiBBIGZpcnN0IGV4YW1pbmF0aW9uIHJldmVhbHMgdGhlIGZvbGxvd2luZyB2YXJpYWJsZXM6DQpgYGB7cn0NCmJpcnRod2VpZ2h0IDwtIHJlYWQuY3N2KCJkYXRhL0JpcnRod2VpZ2h0LmNzdiIpDQpoZWFkKGJpcnRod2VpZ2h0KQ0KYGBgDQpGb3IgdGhlIGZpcnN0IHBhcnQgb2YgdGhlIGFuYWx5c2lzLCB0aGUgY29sdW1uIGBCaXJ0aHdlaWdodGAgaXMgc2VsZWN0ZWQgYXMgYSByZXNwb25zZSB2YXJpYWJsZQ==</div>
 
 
 

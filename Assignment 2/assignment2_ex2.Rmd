@@ -5,3 +5,9 @@ output: html_notebook
 
 ## Exercise 2. Birthweights
 
+This exercise explores the data set `Birthweight.csv` which contains information on new born babies and their parents. A first examination reveals the following variables:
+```{r}
+birthweight <- read.csv("data/Birthweight.csv")
+head(birthweight)
+```
+For the first part of the analysis, the column `Birthweight` is selected as a response variable
