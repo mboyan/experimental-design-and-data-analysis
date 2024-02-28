@@ -1,0 +1,7 @@
+---
+title: "Assignment 2 - Exercise 3"
+output: html_notebook
+---
+
+## Exercise 3. School awards
+

@@ -1,0 +1,7 @@
+---
+title: "Assignment 2 - Exercise 2"
+output: html_notebook
+---
+
+## Exercise 2. Birthweights
+

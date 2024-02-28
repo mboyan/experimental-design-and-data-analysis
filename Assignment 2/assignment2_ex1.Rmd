@@ -1,0 +1,7 @@
+---
+title: "Assignment 2 - Exercise 1"
+output: html_notebook
+---
+
+## Exercise 1. Fruit Flies
+
