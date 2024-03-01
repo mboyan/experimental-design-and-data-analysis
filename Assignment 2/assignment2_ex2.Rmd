@@ -1,13 +1,43 @@
 ---
 title: "Assignment 2 - Exercise 2"
-output: html_notebook
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ## Exercise 2. Birthweights
 
-This exercise explores the data set `Birthweight.csv` which contains information on new born babies and their parents. A first examination reveals the following variables:
+This exercise explores the data set `Birthweight.csv` which contains information on new born babies and their parents. A first examination reveals the 16 variables with 42 observations:
 ```{r}
 birthweight <- read.csv("data/Birthweight.csv")
+str(birthweight)
 head(birthweight)
 ```
-For the first part of the analysis, the column `Birthweight` is selected as a response variable
+For the first part of the analysis, the variables `ID`, `smoker`, `lowbwt` and `mage35` are disregarded, the column `Birthweight` is selected as a response variable, while the other 11 variables are considered potential predictors.
+```{r}
+birthweight1 <- birthweight
+birthweight1$ID <- NULL; birthweight1$smoker <- NULL
+birthweight1$lowbwt <- NULL; birthweight1$mage35 <- NULL
+```
+
+**a)** The explanatory variables `Length`, `Headcirk`, `Gestation`, `mage`, `mnosig`, `mheight`, `mppwt`, `fage`, `fedyrs`, `fnosig`, and `fheight` are to be examined for potential (leverage) points and, in case such are found, it is to be verified whether these are influence points by examining the effect of their removal. A series of box plots for all variables provides a first glance on the presence of such points.
+```{r  fig.height = 4.5, fig.width = 6, fig.align = "center"}
+par(mfrow=c(3, 4), mar=c(1,2,2,2))
+for (i in 1:12) {
+  boxplot(birthweight1[,i], main=names(birthweight1)[i])
+}
+```
+The box plots reveal visible outliers in the variables `Length`, `Gestation`, `mnocig`, `mppwt` and `fage`. These predictors are therefore selected for more in-depth analysis through a scatter plot of each against the response variable `Birthweight`.
+```{r  fig.height = 3, fig.width = 7, fig.align = "center"}
+predictors = c("Length", "Gestation", "mnocig", "mppwt", "fage")
+par(mfrow=c(2, 5), mar=c(1.8,2,2,1))
+for (i in 1:5) {
+  plot(birthweight1[,predictors[i]], birthweight1$Birthweight,
+       main=predictors[i], xlab=predictors[i], ylab="Birthweight")
+}
+for (i in 1:5) {
+  predlm <- lm(birthweight1$Birthweight ~ birthweight1[,predictors[i]])
+  qqnorm(resid(predlm), main=predictors[i])
+}
+```
