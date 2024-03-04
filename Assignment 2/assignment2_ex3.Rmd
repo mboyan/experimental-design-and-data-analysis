@@ -1,7 +1,68 @@
 ---
 title: "Assignment 2 - Exercise 3"
-output: html_notebook
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ## Exercise 3. School awards
 
+**a)**
+```{r, fig.height=2.6, fig.width=3}
+#Read in the data and extract the relevant column
+awards=read.table("data/awards.txt",header=TRUE)
+pairs(awards, main="Pairs Plot for Awards")
+```
+
+```{r}
+#Simple Poisson regression without math
+awardsglm = glm(num_awards~prog, family=poisson, data=awards)
+summary(awardsglm)
+``` 
+
+```{r, fig.height=2.5, fig.width=3}
+#Poisson regression with program as a factor
+awards$prog=factor(awards$prog)
+awardsglm2 = glm(num_awards~prog, family=poisson, data=awards)
+summary(awardsglm2)
+plot(c(0,coef(awardsglm2)[2:3]),type="l",xlab="Program Type",ylab="Estimated Number of Awards",main="Coefficients for Different Award Types")
+```
+
+```{r}
+program1 = data.frame(prog="1")
+program2 = data.frame(prog="2")
+program3 = data.frame(prog="3")
+num_awards_total = sum(awards$num_awards)
+estimated_num_awards_p1 = predict(awardsglm2,program1,type="response")*num_awards_total
+estimated_num_awards_p2 = predict(awardsglm2,program2,type="response")*num_awards_total
+estimated_num_awards_p3 = predict(awardsglm2,program3,type="response")*num_awards_total
+```
+
+The expected number of awards for programs 1, 2, and 3 are `r estimated_num_awards_p1[[1]]`, `r estimated_num_awards_p2[[1]]`, and `r estimated_num_awards_p3[[1]]` respectively. 
+
+```{r}
+program1_data = awards$num_awards[awards$prog=="1"]
+program2_data = awards$num_awards[awards$prog=="2"]
+program3_data = awards$num_awards[awards$prog=="3"]
+ks.test(program1_data, program2_data, program3_data)
+```
+
+```{r, fig.height=2.6, fig.width=3}
+#awards$math=factor(awards$math)
+awardsglm3 = glm(num_awards~prog+math, family=poisson, data=awards)
+summary(awardsglm3)
+plot(c(0,coef(awardsglm3)[2:3]),type="l",xlab="Program Type",ylab="Estimated Number of Awards",main="Coefficients for Different Award Types")
+```
+
+```{r}
+program1 = data.frame(prog="1", math=56)
+program2 = data.frame(prog="2", math=56)
+program3 = data.frame(prog="3", math=56)
+num_awards_total = sum(awards$num_awards)
+estimated_num_awards_p1 = predict(awardsglm3,program1,type="response")*num_awards_total
+estimated_num_awards_p2 = predict(awardsglm3,program2,type="response")*num_awards_total
+estimated_num_awards_p3 = predict(awardsglm3,program3,type="response")*num_awards_total
+```
+
+The expected number of awards for programs 1, 2, and 3 are `r estimated_num_awards_p1[[1]]`, `r estimated_num_awards_p2[[1]]`, and `r estimated_num_awards_p3[[1]]` respectively. 
