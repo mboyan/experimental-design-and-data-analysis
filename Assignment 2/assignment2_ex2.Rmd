@@ -21,7 +21,7 @@ birthweight1$ID <- NULL; birthweight1$smoker <- NULL
 birthweight1$lowbwt <- NULL; birthweight1$mage35 <- NULL
 ```
 
-**a)** The explanatory variables `Length`, `Headcirk`, `Gestation`, `mage`, `mnosig`, `mheight`, `mppwt`, `fage`, `fedyrs`, `fnosig`, and `fheight` are to be examined for potential (leverage) points and, in case such are found, it is to be verified whether these are influence points by examining the effect of their removal. A series of box plots for all variables provides a first glance on the presence of such points.
+**a)** The explanatory variables `Length`, `Headcirk`, `Gestation`, `mage`, `mnosig`, `mheight`, `mppwt`, `fage`, `fedyrs`, `fnosig`, and `fheight` are to be examined for potential (leverage) points and, in case such are found, it is to be verified whether these are influence points by examining the effect of their removal. A series of box plots for all variables provides a first glance on the presence of points outside of the interquartile range.
 ```{r  fig.height = 4.5, fig.width = 6, fig.align = "center"}
 par(mfrow=c(3, 4), mar=c(1,2,2,2))
 for (i in 1:12) {
@@ -29,15 +29,18 @@ for (i in 1:12) {
 }
 ```
 The box plots reveal visible outliers in the variables `Length`, `Gestation`, `mnocig`, `mppwt` and `fage`. These predictors are therefore selected for more in-depth analysis through a scatter plot of each against the response variable `Birthweight`.
-```{r  fig.height = 3, fig.width = 7, fig.align = "center"}
+```{r  fig.height = 1.5, fig.width = 7, fig.align = "center"}
 predictors = c("Length", "Gestation", "mnocig", "mppwt", "fage")
-par(mfrow=c(2, 5), mar=c(1.8,2,2,1))
+par(mfrow=c(1, 5), mar=c(4,4,2,1))
 for (i in 1:5) {
   plot(birthweight1[,predictors[i]], birthweight1$Birthweight,
        main=predictors[i], xlab=predictors[i], ylab="Birthweight")
 }
-for (i in 1:5) {
-  predlm <- lm(birthweight1$Birthweight ~ birthweight1[,predictors[i]])
-  qqnorm(resid(predlm), main=predictors[i])
-}
 ```
+These plots provide a more detailed view over the points identified as outliers in the box plots. For the variable `Gestation`, the characterisation of the points as potential points is visually ambiguous in the upper plot, whereas for the rest of the pre-selected variables one point obviously stands out as separated from the cluster. A calculation of Cook's distance quantifies the difference between the model response with and without a specific observation. As such, it can provide a rough check whether these potential points are in fact influence points.
+```{r}
+bw_model <- lm(Birthweight~Length+mnocig+fage+mppwt, data=birthweight1)
+influence <- influence.measures(bw_model)
+cdist <- cooks.distance(bw_model)
+```
+
