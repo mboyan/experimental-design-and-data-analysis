@@ -12,35 +12,80 @@ This exercise explores the data set `Birthweight.csv` which contains information
 ```{r}
 birthweight <- read.csv("data/Birthweight.csv")
 str(birthweight)
-head(birthweight)
 ```
-For the first part of the analysis, the variables `ID`, `smoker`, `lowbwt` and `mage35` are disregarded, the column `Birthweight` is selected as a response variable, while the other 11 variables are considered potential predictors.
+For the first part of the analysis, the variables `ID`, `smoker`, `lowbwt` and `mage35` are disregarded, the column `Birthweight` is selected as a response variable, while the other 11 variables are considered explanatory variables.
 ```{r}
 birthweight1 <- birthweight
 birthweight1$ID <- NULL; birthweight1$smoker <- NULL
 birthweight1$lowbwt <- NULL; birthweight1$mage35 <- NULL
 ```
 
-**a)** The explanatory variables `Length`, `Headcirk`, `Gestation`, `mage`, `mnosig`, `mheight`, `mppwt`, `fage`, `fedyrs`, `fnosig`, and `fheight` are to be examined for potential (leverage) points and, in case such are found, it is to be verified whether these are influence points by examining the effect of their removal. A series of box plots for all variables provides a first glance on the presence of points outside of the interquartile range.
-```{r  fig.height = 4.5, fig.width = 6, fig.align = "center"}
-par(mfrow=c(3, 4), mar=c(1,2,2,2))
-for (i in 1:12) {
-  boxplot(birthweight1[,i], main=names(birthweight1)[i])
-}
-```
-The box plots reveal visible outliers in the variables `Length`, `Gestation`, `mnocig`, `mppwt` and `fage`. These predictors are therefore selected for more in-depth analysis through a scatter plot of each against the response variable `Birthweight`.
-```{r  fig.height = 1.5, fig.width = 7, fig.align = "center"}
-predictors = c("Length", "Gestation", "mnocig", "mppwt", "fage")
-par(mfrow=c(1, 5), mar=c(4,4,2,1))
-for (i in 1:5) {
-  plot(birthweight1[,predictors[i]], birthweight1$Birthweight,
-       main=predictors[i], xlab=predictors[i], ylab="Birthweight")
-}
-```
-These plots provide a more detailed view over the points identified as outliers in the box plots. For the variable `Gestation`, the characterisation of the points as potential points is visually ambiguous in the upper plot, whereas for the rest of the pre-selected variables one point obviously stands out as separated from the cluster. A calculation of Cook's distance quantifies the difference between the model response with and without a specific observation. As such, it can provide a rough check whether these potential points are in fact influence points.
+**a)** The explanatory variables `Length`, `Headcirk`, `Gestation`, `mage`, `mnosig`, `mheight`, `mppwt`, `fage`, `fedyrs`, `fnosig`, and `fheight` are to be examined for potential (leverage) points and, in case such are found, it is to be verified whether these are influence points by examining the effect of their removal. A qualitative investigation through box plots and scatter plots is possible, but a more compact and quantitative approach is to calculate Cook's distance for each observation within each explanatory variable. A Cook's distance of a potential point larger than one provides evidence that this point is in fact an influence point. The following code iterates through all predictors and prints the maximum Cook's distance among the observations.
+
 ```{r}
-bw_model <- lm(Birthweight~Length+mnocig+fage+mppwt, data=birthweight1)
-influence <- influence.measures(bw_model)
-cdist <- cooks.distance(bw_model)
+for (i in 1:length(birthweight1)) {
+  if (names(birthweight1)[i] == "Birthweight") next
+  bw_model <- lm(Birthweight~birthweight1[,i], data=birthweight1)
+  cdist <- cooks.distance(bw_model)
+  print(paste(names(birthweight1)[i], max(cdist)))
+}
 ```
 
+None of the resulting Cook's distances are sufficiently large to conclude that the points are influence points.
+
+Another potential problem to be addressed is the presence of collinearity between the explanatory variables. A preliminary investigation can be conducted by analysing the variance inflation factors (VIF) of a model including the 11 predictors.
+```{r}
+bw_model <- lm(Birthweight~., data=birthweight1)
+library(car); vif(bw_model)
+```
+
+In general, the resulting VIF values are not large enough to indicate collinearity. Nonetheless, two variables, `mage` and `fage`, have VIF values close to 5. Since the above analysis does not provide information about the collinear groups of variables which these two belong to, a more detailed examination can be performed on a larger selection of variables, for instance the ones with a VIF larger than 2: `Length`, `Gestation`, `mage`, `mheight`, `mppwt` and `fage`. To illustrate visually in how far these two variables are correlated, a pairwise scatter plot is created.
+```{r}
+pairs(birthweight1[,c("Length", "Gestation", "mage", "mheight", "mppwt", "fage")])
+```
+Linear correlations are observed in pairs like `Length` and `Gestation`, `mage` and `fage`, and `mheight` and `mppwt`. The first one is indicative of the fact that the length of the gestation period is correlated to the baby's growth. The second one is expected, as the mother's and father's age commonly do not differ a lot. The third one is also logical, as the mother's height and pre-pregnancy weight are likely to be correlated. The presence of collinearity is not a problem in this case, as the VIF values are not large enough to indicate that the estimates of the coefficients are unstable.
+
+**b)** To reduce the number of explanatory variables, the step-down method is applied by iteratively analysing the significance of the influence of all independent variables on `Birthweight` and removing the least significant one, then repeating the process until all variables have a significant effect.
+```{r}
+model_summary <- summary(bw_model)
+p_values <- model_summary$coefficients[,4]
+birthweight2 <- birthweight1
+while (max(p_values) > 0.05) {
+  max_p_name <- names(which.max(p_values))
+  birthweight2 <- birthweight2[, names(birthweight2) != max_p_name]
+  bw_model <- lm(Birthweight~., data=birthweight2)
+  model_summary <- summary(bw_model)
+  p_values <- model_summary$coefficients[,4]
+}
+model_summary
+```
+The final model is reduced to only two explanatory variables: `Headcirc` and `Gestation`, both of which exhibit a p-value below 0.05. Since the head circumference can be considered indicative of the baby's size, and the length of the gestation period clearly determines how much the baby grows in size and weight prior to birth, the influence of the two variables seems logical.
+
+**c)** For the next exercise, the average of each predictor value from the reduced model is taken and used as a new observation, for which the 95% confidence and prediction intervals for the response variable `Birthweight` are calculated.
+```{r}
+averages <- data.frame(Headcirc=mean(birthweight2$Headcirc), Gestation=mean(birthweight2$Gestation))
+averages
+predict(bw_model, newdata=averages, interval="confidence", level=0.95)
+predict(bw_model, newdata=averages, interval="prediction", level=0.95)
+```
+As expected, the prediction interval is wider than the confidence interval, as it encompasses individual observations instead of observation means and thus accounts for the error in these observations as well.
+
+**d)** As an alternative to the step-down method, the LASSO method is applied to the original model to reduce the number of explanatory variables. The `cv.glmnet` function from the `glmnet` package is used to select the optimal value of the tuning parameter `lambda` by cross-validation.
+```{r}
+library(glmnet)
+set.seed(123) # For reproducibility
+x <- as.matrix(birthweight1[, names(birthweight1) != 'Birthweight'])
+y <- as.double(birthweight1$Birthweight)
+train <- sample(1:nrow(x), 0.67*nrow(x))
+x.train <- x[train,]; y.train <- y[train]
+x.test <- x[-train,]; y.test <- y[-train]
+lasso.mod <- glmnet(x.train, y.train, alpha=1)
+cv.lasso <- cv.glmnet(x.train, y.train, alpha=1, type.measure="mse")
+#plot(lasso.mod, label=T, xvar="lambda")
+plot(cv.lasso)
+plot(cv.lasso$glmnet.fit, xvar="lambda", label=T)
+lambda.min <- cv.lasso$lambda.min; lambda.1se <- cv.lasso$lambda.1se
+coef(cv.lasso, s=cv.lasso$lambda.min)
+y.pred <- predict(lasso.mod, s=lambda.min, newx=x.test)
+mse.lasso <- mean((y.pred-y.test)^2)
+```
