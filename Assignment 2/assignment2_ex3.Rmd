@@ -1,9 +1,9 @@
 ---
 title: "Assignment 2 - Exercise 3"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 ## Exercise 3. School awards
@@ -33,13 +33,12 @@ plot(c(0,coef(awardsglm2)[2:3]),type="l",xlab="Program Type",ylab="Estimated Num
 program1 = data.frame(prog="1")
 program2 = data.frame(prog="2")
 program3 = data.frame(prog="3")
-num_awards_total = sum(awards$num_awards)
-estimated_num_awards_p1 = predict(awardsglm2,program1,type="response")*num_awards_total
-estimated_num_awards_p2 = predict(awardsglm2,program2,type="response")*num_awards_total
-estimated_num_awards_p3 = predict(awardsglm2,program3,type="response")*num_awards_total
+estimated_num_awards_p1 = predict(awardsglm2,program1,type="response")
+estimated_num_awards_p2 = predict(awardsglm2,program2,type="response")
+estimated_num_awards_p3 = predict(awardsglm2,program3,type="response")
 ```
 
-The expected number of awards for programs 1, 2, and 3 are `r estimated_num_awards_p1[[1]]`, `r estimated_num_awards_p2[[1]]`, and `r estimated_num_awards_p3[[1]]` respectively. 
+The expected number of awards for programs 1, 2, and 3 are `r round(estimated_num_awards_p1[[1]], 4)`, `r round(estimated_num_awards_p2[[1]],4)`, and `r round(estimated_num_awards_p3[[1]],4)` respectively. 
 
 ```{r}
 program1_data = awards$num_awards[awards$prog=="1"]
@@ -59,10 +58,9 @@ plot(c(0,coef(awardsglm3)[2:3]),type="l",xlab="Program Type",ylab="Estimated Num
 program1 = data.frame(prog="1", math=56)
 program2 = data.frame(prog="2", math=56)
 program3 = data.frame(prog="3", math=56)
-num_awards_total = sum(awards$num_awards)
-estimated_num_awards_p1 = predict(awardsglm3,program1,type="response")*num_awards_total
-estimated_num_awards_p2 = predict(awardsglm3,program2,type="response")*num_awards_total
-estimated_num_awards_p3 = predict(awardsglm3,program3,type="response")*num_awards_total
+estimated_num_awards_p1 = predict(awardsglm3,program1,type="response")
+estimated_num_awards_p2 = predict(awardsglm3,program2,type="response")
+estimated_num_awards_p3 = predict(awardsglm3,program3,type="response")
 ```
 
-The expected number of awards for programs 1, 2, and 3 are `r estimated_num_awards_p1[[1]]`, `r estimated_num_awards_p2[[1]]`, and `r estimated_num_awards_p3[[1]]` respectively. 
+The expected number of awards for programs 1, 2, and 3 are `r round(estimated_num_awards_p1[[1]], 4)`, `r round(estimated_num_awards_p2[[1]], 4)`, and `r round(estimated_num_awards_p3[[1]], 4)` respectively. 
