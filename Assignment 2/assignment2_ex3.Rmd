@@ -15,12 +15,6 @@ awards=read.table("data/awards.txt",header=TRUE)
 pairs(awards, main="Pairs Plot for Awards")
 ```
 
-```{r}
-#Simple Poisson regression without math
-awardsglm = glm(num_awards~prog, family=poisson, data=awards)
-summary(awardsglm)
-``` 
-
 ```{r, fig.height=2.5, fig.width=3}
 #Poisson regression with program as a factor
 awards$prog=factor(awards$prog)
