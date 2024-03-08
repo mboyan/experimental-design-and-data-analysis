@@ -65,27 +65,36 @@ The final model is reduced to only two explanatory variables: `Headcirc` and `Ge
 ```{r}
 averages <- data.frame(Headcirc=mean(birthweight2$Headcirc), Gestation=mean(birthweight2$Gestation))
 averages
-predict(bw_model, newdata=averages, interval="confidence", level=0.95)
-predict(bw_model, newdata=averages, interval="prediction", level=0.95)
+stepdown_ci <- predict(bw_model, newdata=averages, interval="confidence", level=0.95)
+stepdown_pi <- predict(bw_model, newdata=averages, interval="prediction", level=0.95)
 ```
-As expected, the prediction interval is wider than the confidence interval, as it encompasses individual observations instead of observation means and thus accounts for the error in these observations as well.
+The resulting fitted value for `Birthweight` is `r stepdown_ci[,1]`. As expected, the prediction interval [`r stepdown_pi[,2]`, `r stepdown_pi[,3]`] is wider than the confidence interval [`r stepdown_ci[,2]`, `r stepdown_ci[,3]`], as it encompasses individual observations instead of observation means and thus accounts for the error in these observations as well.
 
-**d)** As an alternative to the step-down method, the LASSO method is applied to the original model to reduce the number of explanatory variables. The `cv.glmnet` function from the `glmnet` package is used to select the optimal value of the tuning parameter `lambda` by cross-validation.
-```{r}
+**d)** As an alternative to the step-down method, the LASSO method is applied to the original model to reduce the number of explanatory variables. The `cv.glmnet` function from the `glmnet` package is used to select the optimal value of the tuning parameter $\lambda$ by cross-validation. Just like in b), the reduction starts with the filtered data set `birthweight1`. To train the model, two thirds of the data points are randomly sampled and one third is reserved for subsequent testing.
+```{r fig.height = 6, fig.width = 6, fig.align = "center", warning=FALSE, message=FALSE}
+par(mfrow=c(2,1), mar=c(4,4,6,1))
 library(glmnet)
 set.seed(123) # For reproducibility
-x <- as.matrix(birthweight1[, names(birthweight1) != 'Birthweight'])
+x_df <- birthweight1[, names(birthweight1) != 'Birthweight']
+x <- as.matrix(x_df)
 y <- as.double(birthweight1$Birthweight)
 train <- sample(1:nrow(x), 0.67*nrow(x))
-x.train <- x[train,]; y.train <- y[train]
-x.test <- x[-train,]; y.test <- y[-train]
-lasso.mod <- glmnet(x.train, y.train, alpha=1)
-cv.lasso <- cv.glmnet(x.train, y.train, alpha=1, type.measure="mse")
-#plot(lasso.mod, label=T, xvar="lambda")
-plot(cv.lasso)
-plot(cv.lasso$glmnet.fit, xvar="lambda", label=T)
-lambda.min <- cv.lasso$lambda.min; lambda.1se <- cv.lasso$lambda.1se
-coef(cv.lasso, s=cv.lasso$lambda.min)
-y.pred <- predict(lasso.mod, s=lambda.min, newx=x.test)
-mse.lasso <- mean((y.pred-y.test)^2)
+x_train <- x[train,]; y_train <- y[train]
+x_test <- x[-train,]; y_test <- y[-train]; x_test_df <- x_df[-train,]
+lasso_model <- glmnet(x_train, y_train, alpha=1)
+cv_lasso <- cv.glmnet(x_train, y_train, alpha=1, type.measure="mse")
+plot(cv_lasso, main="Cross-validated MSE vs. log(lambda)")
+plot(cv_lasso$glmnet.fit, xvar="lambda", label=T, main="LASSO coefficients vs. log(lambda)")
+lambda_min <- cv_lasso$lambda.min; lambda_1se <- cv_lasso$lambda.1se
+coef(cv_lasso, s=cv_lasso$lambda.min)
+lasso_pred <- predict(lasso_model, s=lambda_min, newx=x_test)
+mse_lasso <- mean((lasso_pred-y_test)^2)
+stepdown_pred <- predict(bw_model, newdata=x_test_df)
+mse_stepdown <- mean((stepdown_pred-y_test)^2)
 ```
+
+The plot of the cross-validated MSE shows for which value of the free parameter $\lambda$ the penalty term $\lambda P(\beta)$ compensates the RSS term $\frac{1}{N}||Y-X\beta||^2$ the best. The left vertical line indicates the value of `lambda.min`, which is the value for which the cross-validated error is minimised. The right vertical line marks the value of `lambda.1se`, which is the largest value of $\lambda$ such that the error is within one standard error of the minimum. The second plot depicts the shrinkage of the coefficients with increasing $\lambda$. Since this shrinkage means that the model is becoming simpler, `lambda.1se` is relevant for finding the optimal trade-off between a minimum MSE and a most simplified model.
+
+When observing the coefficients of the simplified model, it is noticeable that `Headcirc` and `Gestation` are present, just like in the reduced model from the step-down method. The rest of the remaining coefficients in the LASSO model, `Length`, `mheight` and `fheight` are close to zero but still present. Both the LASSO-optimised model and the model from b) are tested with the remaining subset of one third of the data points. This results in a MSE of `r mse_lasso` for the LASSO method and a MSE of `r mse_stepdown` for the step-down method. Surprisingly, the LASSO method does not seem to perform better than the step-down method in this case.
+
+**e)** The next exercises consider a new subset of the data set: the binary variable `lowbwt`, indicating whether the newborn baby's weight is under 6 lbs, is used as a response variable, while the variables `Gestation`, `smoker` and `mage35` are used as predictors.
