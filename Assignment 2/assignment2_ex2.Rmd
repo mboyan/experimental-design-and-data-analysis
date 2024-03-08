@@ -95,6 +95,24 @@ mse_stepdown <- mean((stepdown_pred-y_test)^2)
 
 The plot of the cross-validated MSE shows for which value of the free parameter $\lambda$ the penalty term $\lambda P(\beta)$ compensates the RSS term $\frac{1}{N}||Y-X\beta||^2$ the best. The left vertical line indicates the value of `lambda.min`, which is the value for which the cross-validated error is minimised. The right vertical line marks the value of `lambda.1se`, which is the largest value of $\lambda$ such that the error is within one standard error of the minimum. The second plot depicts the shrinkage of the coefficients with increasing $\lambda$. Since this shrinkage means that the model is becoming simpler, `lambda.1se` is relevant for finding the optimal trade-off between a minimum MSE and a most simplified model.
 
-When observing the coefficients of the simplified model, it is noticeable that `Headcirc` and `Gestation` are present, just like in the reduced model from the step-down method. The rest of the remaining coefficients in the LASSO model, `Length`, `mheight` and `fheight` are close to zero but still present. Both the LASSO-optimised model and the model from b) are tested with the remaining subset of one third of the data points. This results in a MSE of `r mse_lasso` for the LASSO method and a MSE of `r mse_stepdown` for the step-down method. Surprisingly, the LASSO method does not seem to perform better than the step-down method in this case.
+When observing the coefficients of the simplified model, it is noticeable that `Headcirc` and `Gestation` are present, just like in the reduced model from the step-down method. The rest of the remaining coefficients in the LASSO model, `Length`, `mheight` and `fheight` are close to zero but still present. Both the LASSO-optimised model and the model from b) are tested with the remaining subset of one third of the data points. This results in a MSE of `r mse_lasso` for the LASSO method and a MSE of `r mse_stepdown` for the step-down method. Surprisingly, the LASSO method does not seem to perform better than the step-down method in this case. Nonetheless, its merit may lie in its efficient handling of models of much higher complexity.
 
-**e)** The next exercises consider a new subset of the data set: the binary variable `lowbwt`, indicating whether the newborn baby's weight is under 6 lbs, is used as a response variable, while the variables `Gestation`, `smoker` and `mage35` are used as predictors.
+**e)** The next exercises consider a new subset of the data set: the binary variable `lowbwt`, indicating whether the newborn baby's weight is under 6 lbs, is used as a response variable, while the variables `Gestation` (gestation period), `smoker` (a binary variable indicating whether the mother is a smoker) and `mage35` (a binary variable indicating whether the mother's age is above 35) are used as predictors. A new subset of the data set is created with only the relevant contents, the binary variables being interpreted as factors. Two barplots are created to illustrate the relationship between each of the binary predictors and the binary outcome.
+```{r}
+library(dplyr)
+birthweight3 <- select(birthweight, lowbwt, Gestation, smoker, mage35)
+birthweight3$smoker <- as.factor(birthweight3$smoker)
+birthweight3$mage35 <- as.factor(birthweight3$mage35)
+par(mfrow=c(1,2))
+totsmoker <- xtabs(~smoker, data=birthweight3)
+print(totsmoker)
+barplot(xtabs(lowbwt~smoker, data=birthweight3), xlab="Smoker", ylab="Number of Low Birthweights")
+totmage35 <- xtabs(~mage35, data=birthweight3)
+print(totmage35)
+barplot(xtabs(lowbwt~mage35, data=birthweight3), xlab="Age > 35", ylab="Number of Low Birthweights")
+tot <- xtabs(~smoker+mage35, data=birthweight3)
+totlowbwt <- xtabs(lowbwt~smoker+mage35, data=birthweight3)
+print("Proportion of Low Birtweight cases for variable combination:")
+print(round(totlowbwt/tot, 2))
+```
+Among the observations, only a single non-smoking mother gave birth to an underweight baby. Looking at the age, only one mother older than 35 gave birth to an underweight baby. As the tabular summary of the variable `smoker` suggests, the distribution of smoking vs. non-smoking mothers is quite even, so the prevalence of smokers in low birth weights can be considered indicative of the claim that smoking mothers have lighter babies. On the other hand, there are only 4 35+ mothers in the data set, so a claim about the effect of age on birth weight requires a more detailed analysis. A table indicating the proportion of low birth weights for each combination of `smoker` and `mage35` provides more insight: 
