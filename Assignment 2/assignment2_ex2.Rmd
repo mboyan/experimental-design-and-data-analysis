@@ -10,37 +10,37 @@ output:
 
 This exercise explores the data set `Birthweight.csv` which contains information on new born babies and their parents. A first examination reveals the 16 variables with 42 observations:
 ```{r}
-birthweight <- read.csv("data/Birthweight.csv")
-str(birthweight)
+birthweight <- read.csv("data/Birthweight.csv"); str(birthweight)
 ```
-For the first part of the analysis, the variables `ID`, `smoker`, `lowbwt` and `mage35` are disregarded, the column `Birthweight` is selected as a response variable, while the other 11 variables are considered explanatory variables.
+For the first part of the analysis, the variables `ID`, `smoker`, `lowbwt` and `mage35` are disregarded, the column `Birthweight` is selected as a response variable, while the other 11 variables are considered predictors.
 ```{r}
 birthweight1 <- birthweight
 birthweight1$ID <- NULL; birthweight1$smoker <- NULL
 birthweight1$lowbwt <- NULL; birthweight1$mage35 <- NULL
 ```
 
-**a)** The explanatory variables `Length`, `Headcirk`, `Gestation`, `mage`, `mnosig`, `mheight`, `mppwt`, `fage`, `fedyrs`, `fnosig`, and `fheight` are to be examined for potential (leverage) points and, in case such are found, it is to be verified whether these are influence points by examining the effect of their removal. A qualitative investigation through box plots and scatter plots is possible, but a more compact and quantitative approach is to calculate Cook's distance for each observation within each explanatory variable. A Cook's distance of a potential point larger than one provides evidence that this point is in fact an influence point. The following code iterates through all predictors and prints the maximum Cook's distance among the observations.
+**a)** The explanatory variables `Length`, `Headcirk`, `Gestation`, `mage`, `mnosig`, `mheight`, `mppwt`, `fage`, `fedyrs`, `fnosig`, and `fheight` are examined for potential (leverage) points. In case such are found, it is to be verified whether these are influence points by examining the effect of their removal. A qualitative investigation through plots is possible, but a more compact and quantitative approach is to calculate Cook's distance for each observation within each explanatory variable. A Cook's distance of a potential point larger than one provides evidence that this point is in fact an influence point. The following code iterates through all predictors and prints the maximum Cook's distance among the observations.
 
 ```{r}
+# Create data frame with Cook's distances
+cdist_df <- data.frame()
 for (i in 1:length(birthweight1)) {
   if (names(birthweight1)[i] == "Birthweight") next
   bw_model <- lm(Birthweight~birthweight1[,i], data=birthweight1)
   cdist <- cooks.distance(bw_model)
-  print(paste(names(birthweight1)[i], max(cdist)))
+  cdist_df <- rbind(cdist_df, data.frame(Variable = names(birthweight1)[i],
+                                         CooksDistance = max(cdist)))
 }
+print(t(cdist_df))
 ```
 
-None of the resulting Cook's distances are sufficiently large to conclude that the points are influence points.
-
-Another potential problem to be addressed is the presence of collinearity between the explanatory variables. A preliminary investigation can be conducted by analysing the variance inflation factors (VIF) of a model including the 11 predictors.
-```{r}
-bw_model <- lm(Birthweight~., data=birthweight1)
-library(car); vif(bw_model)
+None of the resulting Cook's distances are sufficiently large to conclude that the points are influence points. Another potential problem to be addressed is collinearity between the explanatory variables. A preliminary investigation can be conducted by analysing the variance inflation factors (VIF) of a model including the 11 predictors.
+```{r warning=FALSE, message=FALSE}
+bw_model <- lm(Birthweight~., data=birthweight1); library(car); vif(bw_model)
 ```
 
-In general, the resulting VIF values are not large enough to indicate collinearity. Nonetheless, two variables, `mage` and `fage`, have VIF values close to 5. Since the above analysis does not provide information about the collinear groups of variables which these two belong to, a more detailed examination can be performed on a larger selection of variables, for instance the ones with a VIF larger than 2: `Length`, `Gestation`, `mage`, `mheight`, `mppwt` and `fage`. To illustrate visually in how far these two variables are correlated, a pairwise scatter plot is created.
-```{r}
+In general, the resulting VIF values are not large enough to indicate collinearity. Nonetheless, `mage` and `fage`, have VIF values close to 5. Since the above analysis does not provide information about the collinear groups that these two belong to, a more detailed examination can be performed on a larger selection of variables, for instance the ones with a VIF larger than 2: `Length`, `Gestation`, `mage`, `mheight`, `mppwt` and `fage`. To examine their correlations visually, a pairwise scatter plot is created.
+```{r fig.height = 4, fig.width = 6, fig.align = "center"}
 pairs(birthweight1[,c("Length", "Gestation", "mage", "mheight", "mppwt", "fage")])
 ```
 Linear correlations are observed in pairs like `Length` and `Gestation`, `mage` and `fage`, and `mheight` and `mppwt`. The first one is indicative of the fact that the length of the gestation period is correlated to the baby's growth. The second one is expected, as the mother's and father's age commonly do not differ a lot. The third one is also logical, as the mother's height and pre-pregnancy weight are likely to be correlated. The presence of collinearity is not a problem in this case, as the VIF values are not large enough to indicate that the estimates of the coefficients are unstable.
@@ -59,25 +59,21 @@ while (max(p_values) > 0.05) {
 }
 model_summary
 ```
-The final model is reduced to only two explanatory variables: `Headcirc` and `Gestation`, both of which exhibit a p-value below 0.05. Since the head circumference can be considered indicative of the baby's size, and the length of the gestation period clearly determines how much the baby grows in size and weight prior to birth, the influence of the two variables seems logical.
+The final model is reduced to only two explanatory variables: `Headcirc` and `Gestation`, both of which exhibit a p-value below 0.05. Since the head circumference can be considered indicative of the baby's size, and the length of the gestation period clearly determines the baby's growth in size prior to birth, the influence of the two variables seems logical.
 
 **c)** For the next exercise, the average of each predictor value from the reduced model is taken and used as a new observation, for which the 95% confidence and prediction intervals for the response variable `Birthweight` are calculated.
 ```{r}
 averages <- data.frame(Headcirc=mean(birthweight2$Headcirc), Gestation=mean(birthweight2$Gestation))
-averages
 stepdown_ci <- predict(bw_model, newdata=averages, interval="confidence", level=0.95)
 stepdown_pi <- predict(bw_model, newdata=averages, interval="prediction", level=0.95)
 ```
 The resulting fitted value for `Birthweight` is `r stepdown_ci[,1]`. As expected, the prediction interval [`r stepdown_pi[,2]`, `r stepdown_pi[,3]`] is wider than the confidence interval [`r stepdown_ci[,2]`, `r stepdown_ci[,3]`], as it encompasses individual observations instead of observation means and thus accounts for the error in these observations as well.
 
-**d)** As an alternative to the step-down method, the LASSO method is applied to the original model to reduce the number of explanatory variables. The `cv.glmnet` function from the `glmnet` package is used to select the optimal value of the tuning parameter $\lambda$ by cross-validation. Just like in b), the reduction starts with the filtered data set `birthweight1`. To train the model, two thirds of the data points are randomly sampled and one third is reserved for subsequent testing.
-```{r fig.height = 6, fig.width = 6, fig.align = "center", warning=FALSE, message=FALSE}
-par(mfrow=c(2,1), mar=c(4,4,6,1))
-library(glmnet)
-set.seed(123) # For reproducibility
+**d)** As an alternative to the step-down method, the LASSO method is applied to the original model to reduce the number of explanatory variables. The `cv.glmnet` function is used to select the optimal value of the tuning parameter $\lambda$ by cross-validation. Like in b), the reduction starts with the filtered data set `birthweight1`. $2/3$ of the data points are randomly sampled for training and the remaining $1/3$ is reserved for subsequent testing.
+```{r fig.height = 5.5, fig.width = 6, fig.align = "center", warning=FALSE, message=FALSE}
+library(glmnet); par(mfrow=c(2,1), mar=c(4,4,6,1)); set.seed(123)
 x_df <- birthweight1[, names(birthweight1) != 'Birthweight']
-x <- as.matrix(x_df)
-y <- as.double(birthweight1$Birthweight)
+x <- as.matrix(x_df); y <- as.double(birthweight1$Birthweight)
 train <- sample(1:nrow(x), 0.67*nrow(x))
 x_train <- x[train,]; y_train <- y[train]
 x_test <- x[-train,]; y_test <- y[-train]; x_test_df <- x_df[-train,]
@@ -97,22 +93,26 @@ The plot of the cross-validated MSE shows for which value of the free parameter 
 
 When observing the coefficients of the simplified model, it is noticeable that `Headcirc` and `Gestation` are present, just like in the reduced model from the step-down method. The rest of the remaining coefficients in the LASSO model, `Length`, `mheight` and `fheight` are close to zero but still present. Both the LASSO-optimised model and the model from b) are tested with the remaining subset of one third of the data points. This results in a MSE of `r mse_lasso` for the LASSO method and a MSE of `r mse_stepdown` for the step-down method. Surprisingly, the LASSO method does not seem to perform better than the step-down method in this case. Nonetheless, its merit may lie in its efficient handling of models of much higher complexity.
 
-**e)** The next exercises consider a new subset of the data set: the binary variable `lowbwt`, indicating whether the newborn baby's weight is under 6 lbs, is used as a response variable, while the variables `Gestation` (gestation period), `smoker` (a binary variable indicating whether the mother is a smoker) and `mage35` (a binary variable indicating whether the mother's age is above 35) are used as predictors. A new subset of the data set is created with only the relevant contents, the binary variables being interpreted as factors. Two barplots are created to illustrate the relationship between each of the binary predictors and the binary outcome.
-```{r}
+**e)** The next exercises consider a new subset of the data set: the binary variable `lowbwt`, indicating whether the newborn baby's weight is under 6 lbs, is used as a response variable, while the variables `Gestation` (gestation period), `smoker` (a binary variable indicating whether the mother is a smoker) and `mage35` (a binary variable indicating whether the mother's age is above 35) are used as predictors. A new subset of the data set is created with only the relevant contents. Two bar plots are created to illustrate the relationship between each of the binary predictors and the binary outcome.
+```{r fig.height = 3, fig.width = 6, fig.align = "center", warning=FALSE, message=FALSE}
 library(dplyr)
 birthweight3 <- select(birthweight, lowbwt, Gestation, smoker, mage35)
-birthweight3$smoker <- as.factor(birthweight3$smoker)
-birthweight3$mage35 <- as.factor(birthweight3$mage35)
 par(mfrow=c(1,2))
 totsmoker <- xtabs(~smoker, data=birthweight3)
-print(totsmoker)
 barplot(xtabs(lowbwt~smoker, data=birthweight3), xlab="Smoker", ylab="Number of Low Birthweights")
 totmage35 <- xtabs(~mage35, data=birthweight3)
-print(totmage35)
 barplot(xtabs(lowbwt~mage35, data=birthweight3), xlab="Age > 35", ylab="Number of Low Birthweights")
 tot <- xtabs(~smoker+mage35, data=birthweight3)
 totlowbwt <- xtabs(lowbwt~smoker+mage35, data=birthweight3)
-print("Proportion of Low Birtweight cases for variable combination:")
-print(round(totlowbwt/tot, 2))
+print(totsmoker); print(totmage35); print(round(totlowbwt/tot, 2))
 ```
-Among the observations, only a single non-smoking mother gave birth to an underweight baby. Looking at the age, only one mother older than 35 gave birth to an underweight baby. As the tabular summary of the variable `smoker` suggests, the distribution of smoking vs. non-smoking mothers is quite even, so the prevalence of smokers in low birth weights can be considered indicative of the claim that smoking mothers have lighter babies. On the other hand, there are only 4 35+ mothers in the data set, so a claim about the effect of age on birth weight requires a more detailed analysis. A table indicating the proportion of low birth weights for each combination of `smoker` and `mage35` provides more insight: 
+Among the observations, only a single non-smoking mother gave birth to an underweight baby. Looking at the age, only one mother older than 35 gave birth to an underweight baby. As the tabular summary of the variable `smoker` suggests, the distribution of smoking vs. non-smoking mothers is quite even, so the prevalence of smokers in low birth weights can be considered indicative of the claim that smoking mothers have lighter babies. On the other hand, there are only 4 35+ mothers in the data set, so the proportions of light babies per age category needs to be considered: 1 in 4 older mothers have a light baby, whereas this applies for only $5/38\approx 0.13$ of the younger mothers. This may be taken as an indication that a low birth weight occurs in a higher percentage with older mothers. A table indicating the proportion of low birth weights for each combination of `smoker` and `mage35` suggests that the highest occurrence of low birth weights is among smoking mothers older than 35 - low birth weight applies to one third of this group. 
+
+**f)** The relationship between the response variable and the predictors is further investigated by fitting a logistic regression model without interactions to the data.
+```{r}
+bw_logmodel <- glm(lowbwt~Gestation+smoker+mage35, data=birthweight3, family="binomial")
+summary(bw_logmodel)
+```
+The summary of the model provides the coefficients needed to estimate the odds ratios for the predictors using the formula $\hat{o_k}=e^{\mu+c_1g_k+c_2s_k+c_3m_k}$, where $g_k$, $s_k$ and $m_k$ are the $k$-th observation of `Gestation`, `smoker` and `mage35`, respectively, and $c_1$, $c_2$ and $c_3$ are their coefficients. The coefficient for `Gestation` is negative, which means that the odds of a low birth weight decrease with increasing gestation period, namely by a factor $e^{-1.4633}\approx 0.231$. The coefficients for `smoker` and `mage35` are positive, which means that the odds of a low birth weight increase for smoking mothers and mothers older than 35. This happens by a factor $e^{5.4495}\approx 232.64$ for smoking mothers and by a factor $e^{0.3223}\approx 1.38$ for older mothers. This confirms the previous observations that older age and, more primarily, smoking are associated with a higher risk of low birth weight
+
+**g)** 
