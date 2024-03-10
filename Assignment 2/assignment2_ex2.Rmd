@@ -115,4 +115,57 @@ summary(bw_logmodel)
 ```
 The summary of the model provides the coefficients needed to estimate the odds ratios for the predictors using the formula $\hat{o_k}=e^{\mu+c_1g_k+c_2s_k+c_3m_k}$, where $g_k$, $s_k$ and $m_k$ are the $k$-th observation of `Gestation`, `smoker` and `mage35`, respectively, and $c_1$, $c_2$ and $c_3$ are their coefficients. The coefficient for `Gestation` is negative, which means that the odds of a low birth weight decrease with increasing gestation period, namely by a factor $e^{-1.4633}\approx 0.231$. The coefficients for `smoker` and `mage35` are positive, which means that the odds of a low birth weight increase for smoking mothers and mothers older than 35. This happens by a factor $e^{5.4495}\approx 232.64$ for smoking mothers and by a factor $e^{0.3223}\approx 1.38$ for older mothers. This confirms the previous observations that older age and, more primarily, smoking are associated with a higher risk of low birth weight
 
-**g)** 
+**g)** Here, we follow a similar procedure to that in f), but we include the respective interactions in the models. Then we can run an ANOVA to determine if the interaction term is significant. 
+```{r}
+bw_logmodel_int1 <- glm(lowbwt~Gestation+smoker+mage35+Gestation:smoker, data=birthweight3, family="binomial")
+anova(bw_logmodel_int1, test="Chisq")
+
+bw_logmodel_int2 <- glm(lowbwt~Gestation+smoker+mage35+Gestation:mage35, data=birthweight3, family="binomial")
+anova(bw_logmodel_int2, test="Chisq")
+```
+We notice that, for both models where the interaction term was tested individually, neither interaction term was significant. However, both the variables `Gestation` and `smoker` are significant, and should be included in the model despite not having an  interaction. In this case, we would prefer to use the model from f)  and not g).  
+
+**h)** Our resulting model from f) will be used below to determine the probability of low birth weight for the combinations of factors with a gestation length of 40 weeks. 
+```{r}
+#final_logmodel <- glm(lowbwt~Gestation+smoker, data=birthweight3, family="binomial")
+combo1 = data.frame(Gestation=40, smoker=0, mage35=0)
+combo2 = data.frame(Gestation=40, smoker=1, mage35=0)
+combo3 = data.frame(Gestation=40, smoker=0, mage35=1)
+combo4 = data.frame(Gestation=40, smoker=1, mage35=1)
+plbw_combo1 = predict(bw_logmodel,combo1,type="response")
+plbw_combo2 = predict(bw_logmodel,combo2,type="response")
+plbw_combo3 = predict(bw_logmodel,combo3,type="response")
+plbw_combo4 = predict(bw_logmodel,combo4,type="response")
+summary_table <- matrix(c(plbw_combo1, plbw_combo3, plbw_combo2, plbw_combo4), 
+                        byrow = TRUE, 
+                        ncol = 2, 
+                        dimnames = list(c("Non-smoker", "Smoker"), 
+                                        c("Under 35", "Over 35")))
+print(summary_table)
+```
+The results from the probability estimation  are summarized in the above table. We notice once again that the probability of having a baby with a low birth weight is highest for a mother that is over 35  and a smoker, and lowest for a mother that is below 35 and not a smoker, which follows our intuition. 
+
+**i)** In order to perform a contingency table test, the dataframe needs to be converted into a matrix. 
+```{r}
+#Creating the matrix for the smoker boolean low birthweight
+grouped_df_smoker <- with(birthweight3, table(lowbwt, smoker))
+dims <- dim(grouped_df_smoker)
+flat_table <- as.vector(grouped_df_smoker)
+matrix_data_smoker <- matrix(flat_table, nrow = prod(dims[-1]), ncol = dims[1])
+rownames(matrix_data_smoker) <- c("lowbwt=0", "lowbwt=1")
+colnames(matrix_data_smoker) <- c("smoker=0", "smoker=1")
+
+#Creating the matrix for the mage35 boolean low birthweight
+grouped_df_mage35 <- with(birthweight3, table(lowbwt, mage35))
+dims <- dim(grouped_df_mage35)
+flat_table <- as.vector(grouped_df_mage35)
+matrix_data_mage35 <- matrix(flat_table, nrow = prod(dims[-1]), ncol = dims[1])
+rownames(matrix_data_mage35) <- c("lowbwt=0", "lowbwt=1")
+colnames(matrix_data_mage35) <- c("mage35=0", "mage35=1")
+
+#Conducting the two Fisher tests since we have two 2x2 matrices
+pval_smoker <- fisher.test(matrix_data_smoker)[[1]]
+pval_mage35 <-  fisher.test(matrix_data_mage35)[[1]]
+```
+
+Since both of our p-values, `r pval_smoker`, `r pval_mage35` are above 0.05, we would not reject the null hypothesis that there is neither a dependence between smoking and low birth weight nor a dependence between `mage35` and low birth weight. There is certainly an issue with using this method. To start, we do not have at least 5 observations for each combination, which will make our test unreliable. However, the approach in general is not incorrect. One advantage to using a chi-square test is that it simplifies the problem to mere dependence vs independence between variables. However, it does not give specific coefficient variables to delinate how the probabilities of events occurring change with respect to the categorical variables, nor does it allow for continuous variables such as `Gestation` to be taken into account. 
