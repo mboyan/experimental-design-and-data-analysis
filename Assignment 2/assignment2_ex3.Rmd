@@ -37,13 +37,14 @@ kruskal.test(awards$num_awards, awards$prog)
 Since the Kruskal-Wallis test is nonparametric, there is no assumption of normality that needs to be met for the data; hence, it is applicable in this situation. As a nonparametric alternative to ANOVA, we can apply the test to see if there is a significant difference between the distributions of awards among the different programs. Running the test, we see that our p-value is significant, so we can reject the null hypothesis that all of the distributions for the numbers of awards for the different programs are the same. This aligns with our findings from the poisson regression above. 
 
 **c)**
-First, we will conduct the poisson regression with program type, math, and their interaction to see if their interaction is significant in the model. 
+First, we will conduct the poisson regression with program type, math, and their interaction to see if their interaction is significant in the model. Then, we want to conduct an ANOVA to determine if an interaction exists. First, we should check the  ANOVA model assumptions. 
 
 ```{r, fig.height=2.6, fig.width=3}
 awardsglm2 = glm(num_awards~prog*math, family=poisson, data=awards)
+qqnorm(residuals(awardsglm2), main="Q-Q Plot Awards Residuals")
 anova(awardsglm2, test="Chisq")
 ```
-From our findings, we see that the interaction between program type and math score is insignificant, so we do not need to include it in the model. However, both program and math are significant when determining the number of awards, so we will keep those variables in the model and leave out their interaction. 
+The line for our Q-Q plot looks relatively linear, so normality in the model residuals is a valid assumption. From ANOVA results, we see that the interaction between program type and math score is insignificant, so we do not need to include it in the model. However, both program and math are significant when determining the number of awards, so we will keep those variables in the model and leave out their interaction. 
 
 ```{r, fig.height=2.6, fig.width=3}
 awardsglm3 = glm(num_awards~prog+math, family=poisson, data=awards)
