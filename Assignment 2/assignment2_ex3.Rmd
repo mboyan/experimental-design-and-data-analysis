@@ -12,41 +12,44 @@ output:
 ```{r, fig.height=2.6, fig.width=3}
 #Read in the data and extract the relevant column
 awards=read.table("data/awards.txt",header=TRUE)
-pairs(awards, main="Pairs Plot for Awards")
-```
-
-```{r, fig.height=2.5, fig.width=3}
 #Poisson regression with program as a factor
 awards$prog=factor(awards$prog)
-awardsglm2 = glm(num_awards~prog, family=poisson, data=awards)
-summary(awardsglm2)
-plot(c(0,coef(awardsglm2)[2:3]),type="l",xlab="Program Type",ylab="Estimated Number of Awards",main="Coefficients for Different Award Types")
+awardsglm1 = glm(num_awards~prog, family=poisson, data=awards)
+drop1(awardsglm1, test="Chisq")
+summary(awardsglm1)
 ```
+Upon inspection of the output from drop1, we notice that program has a significant impact on the number of awards that each student receives. By looking at the summary output of the model, we notice that program 2 ("general") has the highest associated coefficient, i.e. the probability of a student in the general program of increasing is higher for that student than in the vocational or academic programs. 
 
 ```{r}
 program1 = data.frame(prog="1")
 program2 = data.frame(prog="2")
 program3 = data.frame(prog="3")
-estimated_num_awards_p1 = predict(awardsglm2,program1,type="response")
-estimated_num_awards_p2 = predict(awardsglm2,program2,type="response")
-estimated_num_awards_p3 = predict(awardsglm2,program3,type="response")
+estimated_num_awards_p1 = predict(awardsglm1,program1,type="response")
+estimated_num_awards_p2 = predict(awardsglm1,program2,type="response")
+estimated_num_awards_p3 = predict(awardsglm1,program3,type="response")
 ```
+The expected number of awards for programs 1, 2, and 3 are `r round(estimated_num_awards_p1[[1]], 4)`, `r round(estimated_num_awards_p2[[1]],4)`, and `r round(estimated_num_awards_p3[[1]],4)` respectively. We notice that students in program 2 will have a higher expected number of awards, which confirms out findings from the summary of the poisson regression.
 
-The expected number of awards for programs 1, 2, and 3 are `r round(estimated_num_awards_p1[[1]], 4)`, `r round(estimated_num_awards_p2[[1]],4)`, and `r round(estimated_num_awards_p3[[1]],4)` respectively. 
-
+**b)**
 ```{r}
-program1_data = awards$num_awards[awards$prog=="1"]
-program2_data = awards$num_awards[awards$prog=="2"]
-program3_data = awards$num_awards[awards$prog=="3"]
-ks.test(program1_data, program2_data, program3_data)
+kruskal.test(awards$num_awards, awards$prog)
 ```
+Since the Kruskal-Wallis test is nonparametric, there is no assumption of normality that needs to be met for the data; hence, it is applicable in this situation. As a nonparametric alternative to ANOVA, we can apply the test to see if there is a significant difference between the distributions of awards among the different programs. Running the test, we see that our p-value is significant, so we can reject the null hypothesis that all of the distributions for the numbers of awards for the different programs are the same. This aligns with our findings from the poisson regression above. 
+
+**c)**
+First, we will conduct the poisson regression with program type, math, and their interaction to see if their interaction is significant in the model. 
 
 ```{r, fig.height=2.6, fig.width=3}
-#awards$math=factor(awards$math)
+awardsglm2 = glm(num_awards~prog*math, family=poisson, data=awards)
+anova(awardsglm2, test="Chisq")
+```
+From our findings, we see that the interaction between program type and math score is insignificant, so we do not need to include it in the model. However, both program and math are significant when determining the number of awards, so we will keep those variables in the model and leave out their interaction. 
+
+```{r, fig.height=2.6, fig.width=3}
 awardsglm3 = glm(num_awards~prog+math, family=poisson, data=awards)
 summary(awardsglm3)
-plot(c(0,coef(awardsglm3)[2:3]),type="l",xlab="Program Type",ylab="Estimated Number of Awards",main="Coefficients for Different Award Types")
 ```
+From the summary of th results with math included as an explanatory variable, we notice that the third program ("academic") now has the highest coefficient, so it will increase the probability that a student has a higher average number of awards the most.
 
 ```{r}
 program1 = data.frame(prog="1", math=56)
@@ -56,5 +59,4 @@ estimated_num_awards_p1 = predict(awardsglm3,program1,type="response")
 estimated_num_awards_p2 = predict(awardsglm3,program2,type="response")
 estimated_num_awards_p3 = predict(awardsglm3,program3,type="response")
 ```
-
-The expected number of awards for programs 1, 2, and 3 are `r round(estimated_num_awards_p1[[1]], 4)`, `r round(estimated_num_awards_p2[[1]], 4)`, and `r round(estimated_num_awards_p3[[1]], 4)` respectively. 
+The expected number of awards for programs 1, 2, and 3 are `r round(estimated_num_awards_p1[[1]], 4)`, `r round(estimated_num_awards_p2[[1]], 4)`, and `r round(estimated_num_awards_p3[[1]], 4)` respectively. Here, we notice once again that the students in the academic program have the highest expected number awards when we include math scores as an explanatory variable, which aligns with the results from the summary of our model. 
