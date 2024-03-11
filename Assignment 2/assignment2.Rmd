@@ -1,9 +1,12 @@
 ---
-title: "Assignment 1"
+title: "Assignment 2"
 output:
   pdf_document: default
   html_notebook: default
 ---
+
+_**Group 3**: Sophie Engels, Boyan Mihaylov and Jonas Schäfer_   
+_Experimental Design and Data Analysis, VU Amsterdam (2024)_
 
 ## Exercise 1. Fruit Flies
 
@@ -39,26 +42,25 @@ By inspecting the histogram, we notice that `loglongevity` is slightly right-shi
 ```{r, results='hide'}
 ff_aov <- lm(loglongevity ~ activity, data=ff)
 anova(ff_aov); summary(ff_aov)
-p_activity <- summary(ff_aov)$coefficients[2,4]
+p_activity <- anova(ff_aov)$'Pr(>F)'[1]
 loglongev_by_activity <- tapply(ff$loglongevity, ff$activity, mean)
-longev_by_activity <- exp(loglongev_by_activity)
 p_baseline_low <- summary(ff_aov)$coefficients[2,4]
 ```
 
-The ANOVA strongly suggests that there is a statistically significant difference in log-longevity between the three `activity` levels _isolated_, _low_ and _high_ with p=`r round(p_activity, 4)`, confirming our first intuition. While deviations between our baseline and the _low_ activity group aren't significant with $p=$`r round(p_baseline_low, 4)`, the _high_ activity group has substantial deviations from the baseline mean. The estimated mean `loglongevities` for the three sexual activity groups in order are `r loglongev_by_activity[1]`, `r loglongev_by_activity[2]` and `r loglongev_by_activity[3]`. Non-log values are `r longev_by_activity[1]`, `r longev_by_activity[2]` and `r longev_by_activity[3]`, respectively.
+The ANOVA strongly suggests that there is a statistically significant difference in log-longevity between the three `activity` levels _isolated_, _low_ and _high_ with p=`r round(p_activity, 4)` $< 0.05$, confirming our first intuition. While deviations between our baseline and the _low_ activity group aren't significant with $p=$ `r round(p_baseline_low, 4)` $> 0.05$, the _high_ activity group has substantial deviations from the baseline mean. The estimated mean `loglongevities` for the three sexual activity groups in order are `r round(loglongev_by_activity[1], 4)`, `r round(loglongev_by_activity[2], 4)` and `r round(loglongev_by_activity[3], 4)`.
 
-**b)** We continue our analysis by including the numerical explanatory variable `thorax` (length) by extending our prior analysis using ANCOVA.
+**b)** We continue our analysis by including the numerical explanatory variable `thorax` length by extending our prior analysis using ANCOVA.
 
 ```{r, results='hide'}
 ff_aocv2 <- lm(loglongevity ~ thorax + activity, data=ff)
 anova(ff_aocv2); summary(ff_aocv2)
-p_activity <- anova(ff_aocv2)$'Pr(>F)'[2]
+p_activity_2 <- anova(ff_aocv2)$'Pr(>F)'[2]
 mean_thorax <- mean(ff$thorax)
 mean_thorax_ff <- data.frame(thorax=mean_thorax, activity=levels(ff$activity))
 pred_loglongev <- predict(ff_aocv2, newdata=mean_thorax_ff)
 ```
 
-Here, we confirm again that sexual `activity` is a significant factor with p=`r round(p_activity, 4)`. We can notice its effect of decreasing longevity with increasing activity based also on our predictions for the three `activity` groups when fixing `thorax` length of the data set to its mean. The estimated mean `loglongevities` for the three sexual `activity` groups in order are `r pred_loglongev[1]` ( _isolated_ ), `r pred_loglongev[2]` ( _low_ ) and `r pred_loglongev[3]` ( _high_ ).
+Here, we confirm again that sexual `activity` is a significant factor with p=`r round(p_activity_2, 4)` $< 0.05$. We can notice its effect of decreasing longevity with increasing activity based also on our predictions for the three `activity` groups when fixing `thorax` length of the data set to its mean. The estimated mean `loglongevities` for the three sexual `activity` groups in order are `r round(pred_loglongev[1], 4)` ( _isolated_ ), `r round(pred_loglongev[2], 4)` ( _low_ ) and `r round(pred_loglongev[3], 4)` ( _high_ ).
 
 **c)** Following, we investigate the influence of `thorax` length on `loglongevity.` First, we perform a linear regression to visually inspect the potential relationship between the two variables, amongst others checking for differences in the slopes of the regression lines for the three sexual `activity` groups.
 
@@ -93,11 +95,11 @@ ancova_model <- lm(loglongevity ~ thorax * activity, data=ff)
 # visreg(ancova_model, "thorax", "activity") # alternative one-liner
 anova(ancova_model)
 summary(ancova_model)
-p_interaction <- summary(ancova_model)$coefficients[4,4]
+p_interaction <- anova(ancova_model)$'Pr(>F)'[3]
 p_thorax <- summary(ancova_model)$coefficients[2,4]
 ```
 
-By visually inspecting mean and standard deviation of the linear regression models, we assume that `thorax` length has an influence on `loglongevity`, although the difference between the _low_ and _isolated_ groups is small and perhaps negligible. Performing an ANCOVA, we find that the interaction between `thorax` length and `activity` are not quite significant enough with p=`r round(p_interaction, 4)`. ANCOVA results suggest that `thorax` length has a significant positive influence on `loglongevity` with $p=$`r round(p_thorax, 4)` and this relationship appears to be consistent across different levels of sexual `activity`.
+By visually inspecting mean and standard deviation of the linear regression models, we assume that `thorax` length has an influence on `loglongevity`, although the difference between the _low_ and _isolated_ groups is small and perhaps negligible. Performing an ANCOVA, we find that the interaction between `thorax` length and `activity` are not quite significant enough with p=`r round(p_interaction, 4)`. ANCOVA results suggest that `thorax` length has a significant positive influence on `loglongevity` with $p=$ `r round(p_thorax, 4)` and this relationship appears to be consistent across different levels of sexual `activity`.
 
 **d)** We prefer the analysis with `thorax` length, as it provides a more complete picture of the relationship between sexual `activity`, `thorax` length, and `loglongevity`. If one is solely interested in the influence of sexual `activity` on `loglongevity` or has prior information on variable relationships, then the analysis excluding `thorax` length is sufficient. However, it is incomplete and simplified which could cause issues if `thorax` length has a substantial hidden contribution due to interaction with sexual `activity`. Therefore, for a more comprehensive overview, the analysis including `thorax` length is preferred.
 

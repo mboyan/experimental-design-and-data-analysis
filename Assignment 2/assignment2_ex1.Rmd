@@ -64,7 +64,7 @@ pred_loglongev <- predict(ff_aocv2, newdata=mean_thorax_ff)
 
 Here, we confirm again that sexual **activity** is a significant factor with p=`r round(p_activity, 4)`. We can notice its effect of decreasing longevity with increasing activity based also on our predictions for the three **activity** groups when fixing **thorax** length of the dataset to its mean. The estimated mean **loglongevities** for the three sexual **activity** groups in order are `r pred_loglongev[1]` (*isolated*), `r pred_loglongev[2]` (*low*) and `r pred_loglongev[3]` (*high*).
 
-c)
+c)  
 
 Following, we investigate the influence of **thorax** length on **loglongevity**. First, we perform a linear regression to visually inspect the potential relationship between the two variables, amongst others checking for differences in the slopes of the regression lines for the three sexual **activity** groups.
 
@@ -105,7 +105,7 @@ p_thorax <- summary(ancova_model)$coefficients[2,4]
 
 By visually inspecting mean and standard deviation of the linear regression modles, we assume that **thorax** length has an influence on **loglongevity**, although the difference between the *low* and *isolated* groups is small and perhaps negligible. Performing an ANCOVA, we find that the interaction between **thorax** length and **activity** are not quite significant enough with p=`r round(p_interaction, 4)`. ANCOVA results suggest that **thorax** length has a significant positive influence on **loglongevity** with p=`r round(p_thorax, 4)` and this relationship appears to be consistent across different levels of sexual **activity**.
 
-d)
+d)  
 
 We prefer the analysis with **thorax** length, as it provides a more complete picture of the relationship between sexual **activity**, **thorax** length, and **loglongevity**. If one is solely interested in the influence of sexual **activity** on **loglongevity** or has prior information on variable relationships, then the analysis excluding **thorax** length is sufficient. However, it is incomplete and simplified which could cause issues if **thorax** length has a substantial hidden contribution due to interaction with sexual **activity**. Therefore, for a more comprehensive overview, the analysis including **thorax** length is preferred.
 
