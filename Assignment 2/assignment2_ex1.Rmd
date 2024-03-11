@@ -5,93 +5,119 @@ output: html_notebook
 
 ## Exercise 1. Fruit Flies
 
-To investigate the effect of sexual activity on longevity of fruit flies, 75 male fruit flies were divided randomly in three groups of 25. The fruit flies in the first group were kept solitary, those in the second were kept together with one virgin female fruit fly per day, and those in the third group were kept together with eight virgin female fruit flies a day. In the data-file `fruitflies.txt` the three groups are labelled isolated, low and high. The number of days until death (longevity) was measured for all flies. Later, it was decided to measure also the length of their thorax. 
+In this section, we investigate the effect of sexual activity on longevity of fruit flies. First, we add a column called **loglongevity** to the data frame, containing the logarithm of the number of days until death (**longevity** column). We will use this as our response variable and further discuss this decision later in the report. We also use the *isolated* group as the baseline for the **activity** factor.
 
-
-Add a column loglongevity to the data-frame, containing the logarithm of the number of days until death. Use this as the response variable in the following.
-
-```{r}
+```{r, echo=FALSE}
 library(visreg)
-ff <- read.table("data/fruitflies.txt", header=TRUE)
-ff$loglongevity <- log(ff$longevity, base=exp(1))
-ff$activity <- factor(ff$activity, levels=c("isolated", "low", "high")) # Isolated is baseline
+library(car)
+set.seed(10)
 ```
 
+```{r, results='hide'}
+ff <- read.table("data/fruitflies.txt", header=TRUE)
+ff$loglongevity <- log(ff$longevity, base=exp(1))
+ff$activity <- factor(ff$activity, levels=c("isolated", "low", "high"))
+summary(ff)
+```
 
-a)  Make an informative plot of the data. Investigate whether sexual activity influences longevity by performing a statistical test, without taking the thorax length into account. What are the estimated longevities for the three conditions? Comment.
+a)  
 
-```{r}
-boxplot(loglongevity ~ activity, data=ff, main="Logarithm of longevity of fruit flies by sexual acitivity", col="lightblue", xlab="Sexual activity", ylab="Logarithm of longevity")
+We first investigate the data through plots, checking for normality and gathering intel whether sexual activity may influencs longevity. We also perform a Levene test to check for homogeneity of variances between the three sexual activity groups.
 
+```{r, fig.width=7.2, fig.height=2.8}
+par(mfrow=c(1,3))
+hist(ff$loglongevity, main="Histogram of Log-Longevity", xlab="Log-Longevity", col="lightblue")
+qqnorm(ff$loglongevity, main="Normal Q-Q Plot of Log-Longevity")
+boxplot(loglongevity ~ activity, data=ff, main="Log-Longevity by sexual acitivity", col="lightblue", xlab="Sexual activity", ylab="Log-Longevity")
+p_levene <- leveneTest(loglongevity ~ activity, data=ff)[1,3]
+```
+
+By inspecting the histogram, we notice that **loglongevity** is slightly right-shifted due to the logarithmic mapping. The Q-Q plot however still shows approximately normal distribution. As the Levene test returns a p-value of `r round(p_levene, 4)` $> 0.05$ we assume homogeneous variances and conclude that we are able to perform ANOVA to further assess whether **sexual activity** influences **loglongevity**. We first do this without taking the **thorax** (length) into account. The boxplot provides first hints that the **loglongevit**y range and its mean are higher for the *isolated* group and seem to decrease increasingly for the *low* and *high* **sexual activity** groups.
+
+```{r, results='hide'}
 ff_aov <- lm(loglongevity ~ activity, data=ff)
 anova(ff_aov)
 summary(ff_aov)
 p_activity <- summary(ff_aov)$coefficients[2,4]
 
 loglongev_by_activity <- tapply(ff$loglongevity, ff$activity, mean)
-loglongev_isolated <- loglongev_by_activity["isolated"]
-loglongev_low <- loglongev_by_activity["low"]
-loglongev_high <- loglongev_by_activity["high"]
-
-# True values
 longev_by_activity <- exp(loglongev_by_activity)
-longev_isolated <- longev_by_activity["isolated"]
-longev_low <- longev_by_activity["low"]
-longev_high <- longev_by_activity["high"]
+p_baseline_low <- summary(ff_aov)$coefficients[2,4]
 ```
 
-The ANOVA table strongly suggests that there is a statistically significant difference in log-longevity between the three **activity** levels (isolated, low, high) with a p-value of `r p_activity`. The estimated longevities for the three activities are `r longev_isolated` for isolated, `r longev_low` for low, and `r longev_high` for high.
+The ANOVA strongly suggests that there is a statistically significant difference in log-longevity between the three **activity** levels *isolated*, *low* and *high* with p=`r round(p_activity, 4)`, confirming our first intuition. While deviations between our baseline and the *low* activity group aren't significant with p=`r round(p_baseline_low, 4)`, the *high* activity group has substantial deviations from the baseline mean. The estimated mean **loglongevities** for the three sexual activity groups in order are `r loglongev_by_activity[1]`, `r loglongev_by_activity[2]` and `r loglongev_by_activity[3]`. Non-log values are `r longev_by_activity[1]`, `r longev_by_activity[2]` and `r longev_by_activity[3]`, respectively.
 
-b)  Investigate whether sexual activity influences longevity by performing a statistical test, now including thorax length as an explanatory variable into the analysis. Does sexual activity increase or decrease longevity? What are the estimated longevities for the three groups, for flies with the average (globally, over the whole population) thorax lengths?
+b)  
 
-```{r}
-# Anova test if sexual activity influences longevity including thorax length
-ff_aov2 <- lm(loglongevity ~ activity + thorax, data=ff)
+We continue our analysis by including the numerical explanatory variable *thorax* (length) by extending our prior analysis using ANCOVA.
+
+```{r, results='hide'}
+ff_aocv2 <- lm(loglongevity ~ thorax + activity, data=ff)
+anova(ff_aocv2)
+summary(ff_aocv2)
+p_activity <- anova(ff_aocv2)$'Pr(>F)'[2]
 
 mean_thorax <- mean(ff$thorax)
 mean_thorax_ff <- data.frame(thorax=mean_thorax, activity=levels(ff$activity))
-pred_loglongev <- predict(ff_aov2, newdata=mean_thorax_ff)
-pred_loglongev
+pred_loglongev <- predict(ff_aocv2, newdata=mean_thorax_ff)
 ```
 
-c)  How does thorax length influence longevity? Investigate graphically and by using an appropriate test whether this dependence is similar under all three conditions of sexual activity. 
+Here, we confirm again that sexual **activity** is a significant factor with p=`r round(p_activity, 4)`. We can notice its effect of decreasing longevity with increasing activity based also on our predictions for the three **activity** groups when fixing **thorax** length of the dataset to its mean. The estimated mean **loglongevities** for the three sexual **activity** groups in order are `r round(pred_loglongev[1], 4)` (*isolated*), `r round(pred_loglongev[2]` (*low*) and `r pred_loglongev[3]` (*high*). Non-log values are `r exp(pred_loglongev[1])`, `r exp(pred_loglongev[2])` and `r exp(pred_loglongev[3])`, respectively.
 
-```{r}
-par(mar=c(5, 5, 2, 2))  # Adjust margin to accommodate legend
-colors = c("black", "orange", "red") # prettier colors that are high in contrast
+c)
+
+Following, we investigate the influence of **thorax** length on **loglongevity**. First, we perform a linear regression to visually inspect the potential relationship between the two variables, amongst others checking for differences in the slopes of the regression lines for the three sexual **activity** groups.
+
+```{r, results='hide'}
+par(mar=c(5, 5, 2, 2))
+colors = c("black", "orange", "red")
 
 # Color-coded scatter plot for activities
 plot(ff$thorax, ff$loglongevity, 
      xlab="Thorax Length", ylab="Logarithm of Longevity",
-     main="Logarithm of Longevity vs Thorax Length by Sexual Activity",
+     main="Mean and STD of Log-Longevity vs Thorax Length by Sexual Activity",
      col=colors[as.numeric(factor(ff$activity))], pch=16)
 
+# Legend
 legend("topleft", legend=levels(ff$activity), 
        col=colors, pch=16, title="Activity")
 
-# Regression lines
+# Regression lines and confidence intervals
 models <- list()
 for (act in unique(ff$activity)) {
   subset_ff <- subset(ff, activity==act)
   model <- lm(loglongevity ~ thorax, data=subset_ff)
   models[[act]] <- model
   abline(model, col=colors[which(levels(ff$activity)==act)], lty=2)
+  preds <- predict(model, interval="confidence", level=0.95)
+  polygon(c(subset_ff$thorax, rev(subset_ff$thorax)),
+          c(preds[, "lwr"], rev(preds[, "upr"])), border=NA,
+          col=adjustcolor(colors[which(levels(ff$activity)==act)], alpha.f=0.3))
 }
 
-# TODO: This one makes more sense to use I think
 ancova_model <- lm(loglongevity ~ thorax * activity, data=ff)
-drop1(ancova_model, test="F")
-visreg(ancova_model, "thorax", "activity")
+# visreg(ancova_model, "thorax", "activity") # alternative one-liner
+anova(ancova_model)
+summary(ancova_model)
+p_interaction <- summary(ancova_model)$coefficients[4,4]
+p_thorax <- summary(ancova_model)$coefficients[2,4]
 ```
 
-d)  Which of the two analyses, without or with thorax length, do you prefer? Is one of the analyses wrong?
+By visually inspecting mean and standard deviation of the linear regression modles, we assume that **thorax** length has an influence on **loglongevity**, although the difference between the *low* and *isolated* groups is small and perhaps negligible. Performing an ANCOVA, we find that the interaction between **thorax** length and **activity** are not quite significant enough with p=`r round(p_interaction, 4)`. ANCOVA results suggest that **thorax** length has a significant positive influence on **loglongevity** with p=`r round(p_thorax, 4)` and this relationship appears to be consistent across different levels of sexual **activity**.
 
-I prefer the analysis with thorax length, as it provides a more complete picture of the relationship between sexual activity, thorax length, and longevity. If one is solely interested in the influence of sexual activity on longevity then the analysis excluding thorax length is sufficient. However, it is incomplete and simplified which could cause issues if thorax length has a substantial hidden contribution due to its interaction with sexual activity. Therefore, for a more comprehensive overview, the analysis including thorax length is preferred.
+d)
 
-e)  Perform the ANCOVA with the number of days as the response, rather than its logarithm. Was it wise to use the logarithm as response?
+We prefer the analysis with **thorax** length, as it provides a more complete picture of the relationship between sexual **activity**, **thorax** length, and **loglongevity**. If one is solely interested in the influence of sexual **activity** on **loglongevity** or has prior information on variable relationships, then the analysis excluding **thorax** length is sufficient. However, it is incomplete and simplified which could cause issues if **thorax** length has a substantial hidden contribution due to interaction with sexual **activity**. Therefore, for a more comprehensive overview, the analysis including **thorax** length is preferred.
 
-```{r}
-ancova_model2 <- lm(longevity ~ activity * thorax, data=ff)
-drop1(ancova_model2, test="F")
-visreg(ancova_model2, "thorax", "activity")
+e)  
+
+We now analyze the decision to use the logarithm of **longevity** as response variable by comparings ANCOVA results.
+
+```{r, results='hide'}
+ancova_model2 <- lm(longevity ~ thorax * activity, data=ff)
+anova(ancova_model2)
+summary(ancova_model2)
+leveneTest(longevity ~ activity, data=ff)
 ```
+
+In the case of analyzing the true **longevity** value, no major changes in our interpretations of the results of ANCOVA are observed. We would not state that the baseline and *high* activity group have significant differences in **longevity**. However, the **thorax** length still has a significant positive influence on **longevity**. Levene tests and normality checks are still valid. Arguably, normality is clearer for the original *longevity* values.
