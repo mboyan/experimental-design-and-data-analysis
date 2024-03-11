@@ -1,10 +1,117 @@
 ---
-title: "Assignment 2 - Exercise 2"
+title: "Assignment 1"
 output:
   pdf_document: default
-  html_document:
-    df_print: paged
+  html_notebook: default
 ---
+
+## Exercise 1. Fruit Flies
+
+In this section, we investigate the effect of sexual activity on longevity of fruit flies. First, we add a column called `loglongevity` to the data frame, containing the logarithm of the number of days until death (`longevity` column). We will use this as our response variable and further discuss this decision later in the report. We also use the _isolated_ group as the baseline for the `activity` factor.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(visreg)
+library(car)
+set.seed(10)
+```
+
+```{r, results='hide'}
+ff <- read.table("data/fruitflies.txt", header=TRUE)
+ff$loglongevity <- log(ff$longevity, base=exp(1))
+ff$activity <- factor(ff$activity, levels=c("isolated", "low", "high"))
+summary(ff)
+```
+
+**a)** We first investigate the data through plots, checking for normality and gathering information whether sexual activity may influences longevity. We also perform a Levene test to check for homogeneity of variances between the three sexual activity groups.
+
+```{r, fig.width=7.2, fig.height=2.8}
+par(mfrow=c(1,3))
+hist(ff$loglongevity, main="Histogram of Log-Longevity", xlab="Log-Longevity", col="lightblue")
+qqnorm(ff$loglongevity, main="Normal Q-Q Plot of Log-Longevity")
+boxplot(loglongevity ~ activity, data=ff, main="Log-Longevity by sexual acitivity", col="lightblue", xlab="Sexual activity", ylab="Log-Longevity")
+p_levene <- leveneTest(loglongevity ~ activity, data=ff)[1,3]
+```
+
+By inspecting the histogram, we notice that `loglongevity` is slightly right-shifted due to the logarithmic mapping. The Q-Q plot however still shows approximately normal distribution. As the Levene test returns a p-value of `r round(p_levene, 4)` $> 0.05$ we assume homogeneous variances and conclude that we are able to perform ANOVA to further assess whether sexual `activity` influences `loglongevity`. We first do this without taking the `thorax` (length) into account. The box plot provides first hints that the `loglongevity` range and its mean are higher for the _isolated_ group and seem to decrease increasingly for the _low_ and _high_ sexual activity groups.
+
+```{r, results='hide'}
+ff_aov <- lm(loglongevity ~ activity, data=ff)
+anova(ff_aov)
+summary(ff_aov)
+p_activity <- summary(ff_aov)$coefficients[2,4]
+
+loglongev_by_activity <- tapply(ff$loglongevity, ff$activity, mean)
+longev_by_activity <- exp(loglongev_by_activity)
+p_baseline_low <- summary(ff_aov)$coefficients[2,4]
+```
+
+The ANOVA strongly suggests that there is a statistically significant difference in log-longevity between the three `activity` levels _isolated_, _low_ and _high_ with p=`r round(p_activity, 4)`, confirming our first intuition. While deviations between our baseline and the _low_ activity group aren't significant with $p=$`r round(p_baseline_low, 4)`, the _high_ activity group has substantial deviations from the baseline mean. The estimated mean `loglongevities` for the three sexual activity groups in order are `r loglongev_by_activity[1]`, `r loglongev_by_activity[2]` and `r loglongev_by_activity[3]`. Non-log values are `r longev_by_activity[1]`, `r longev_by_activity[2]` and `r longev_by_activity[3]`, respectively.
+
+**b)** We continue our analysis by including the numerical explanatory variable `thorax` (length) by extending our prior analysis using ANCOVA.
+
+```{r, results='hide'}
+ff_aocv2 <- lm(loglongevity ~ thorax + activity, data=ff)
+anova(ff_aocv2)
+summary(ff_aocv2)
+p_activity <- anova(ff_aocv2)$'Pr(>F)'[2]
+
+mean_thorax <- mean(ff$thorax)
+mean_thorax_ff <- data.frame(thorax=mean_thorax, activity=levels(ff$activity))
+pred_loglongev <- predict(ff_aocv2, newdata=mean_thorax_ff)
+```
+
+Here, we confirm again that sexual `activity` is a significant factor with p=`r round(p_activity, 4)`. We can notice its effect of decreasing longevity with increasing activity based also on our predictions for the three `activity` groups when fixing `thorax` length of the data set to its mean. The estimated mean `loglongevities` for the three sexual `activity` groups in order are `r pred_loglongev[1]` ( _isolated_ ), `r pred_loglongev[2]` ( _low_ ) and `r pred_loglongev[3]` ( _high_ ).
+
+**c)** Following, we investigate the influence of `thorax` length on `loglongevity.` First, we perform a linear regression to visually inspect the potential relationship between the two variables, amongst others checking for differences in the slopes of the regression lines for the three sexual `activity` groups.
+
+```{r, results='hide'}
+par(mar=c(5, 5, 2, 2))
+colors = c("black", "orange", "red")
+
+# Color-coded scatter plot for activities
+plot(ff$thorax, ff$loglongevity, 
+     xlab="Thorax Length", ylab="Logarithm of Longevity",
+     main="Mean and STD of Log-Longevity vs Thorax Length by Sexual Activity",
+     col=colors[as.numeric(factor(ff$activity))], pch=16)
+
+# Legend
+legend("topleft", legend=levels(ff$activity), 
+       col=colors, pch=16, title="Activity")
+
+# Regression lines and confidence intervals
+models <- list()
+for (act in unique(ff$activity)) {
+  subset_ff <- subset(ff, activity==act)
+  model <- lm(loglongevity ~ thorax, data=subset_ff)
+  models[[act]] <- model
+  abline(model, col=colors[which(levels(ff$activity)==act)], lty=2)
+  preds <- predict(model, interval="confidence", level=0.95)
+  polygon(c(subset_ff$thorax, rev(subset_ff$thorax)),
+          c(preds[, "lwr"], rev(preds[, "upr"])), border=NA,
+          col=adjustcolor(colors[which(levels(ff$activity)==act)], alpha.f=0.3))
+}
+
+ancova_model <- lm(loglongevity ~ thorax * activity, data=ff)
+# visreg(ancova_model, "thorax", "activity") # alternative one-liner
+anova(ancova_model)
+summary(ancova_model)
+p_interaction <- summary(ancova_model)$coefficients[4,4]
+p_thorax <- summary(ancova_model)$coefficients[2,4]
+```
+
+By visually inspecting mean and standard deviation of the linear regression models, we assume that `thorax` length has an influence on `loglongevity`, although the difference between the _low_ and _isolated_ groups is small and perhaps negligible. Performing an ANCOVA, we find that the interaction between `thorax` length and `activity` are not quite significant enough with p=`r round(p_interaction, 4)`. ANCOVA results suggest that `thorax` length has a significant positive influence on `loglongevity` with $p=$`r round(p_thorax, 4)` and this relationship appears to be consistent across different levels of sexual `activity`.
+
+**d)** We prefer the analysis with `thorax` length, as it provides a more complete picture of the relationship between sexual `activity`, `thorax` length, and `loglongevity`. If one is solely interested in the influence of sexual `activity` on `loglongevity` or has prior information on variable relationships, then the analysis excluding `thorax` length is sufficient. However, it is incomplete and simplified which could cause issues if `thorax` length has a substantial hidden contribution due to interaction with sexual `activity`. Therefore, for a more comprehensive overview, the analysis including `thorax` length is preferred.
+
+**e)** We now analyze the decision to use the logarithm of `longevity` as response variable by comparing ANCOVA results.
+
+```{r, results='hide'}
+ancova_model2 <- lm(longevity ~ thorax * activity, data=ff)
+anova(ancova_model2); summary(ancova_model2)
+leveneTest(longevity ~ activity, data=ff)
+```
+
+In the case of analyzing the true `longevity` value, no major changes in our interpretations of the results of ANCOVA are observed. We would not state that the baseline and _high_ activity group have significant differences in `longevity`. However, the `thorax` length still has a significant positive influence on `longevity`. Levene tests and normality checks are still valid. Arguably, normality is clearer for the original `longevity` values.
 
 ## Exercise 2. Birthweights
 
@@ -14,15 +121,13 @@ birthweight <- read.csv("data/Birthweight.csv"); str(birthweight)
 ```
 For the first part of the analysis, the variables `ID`, `smoker`, `lowbwt` and `mage35` are disregarded, the column `Birthweight` is selected as a response variable, while the other 11 variables are considered predictors.
 ```{r}
-birthweight1 <- birthweight
-birthweight1$ID <- NULL; birthweight1$smoker <- NULL
+birthweight1 <- birthweight; birthweight1$ID <- NULL; birthweight1$smoker <- NULL
 birthweight1$lowbwt <- NULL; birthweight1$mage35 <- NULL
 ```
 
 **a)** The explanatory variables `Length`, `Headcirk`, `Gestation`, `mage`, `mnosig`, `mheight`, `mppwt`, `fage`, `fedyrs`, `fnosig`, and `fheight` are examined for potential (leverage) points. In case such are found, it is to be verified whether these are influence points by examining the effect of their removal. A qualitative investigation through plots is possible, but a more compact and quantitative approach is to calculate Cook's distance for each observation within each explanatory variable. A Cook's distance of a potential point larger than one provides evidence that this point is in fact an influence point. The following code iterates through all predictors and prints the maximum Cook's distance among the observations.
 
 ```{r}
-# Create data frame with Cook's distances
 cdist_df <- data.frame()
 for (i in 1:length(birthweight1)) {
   if (names(birthweight1)[i] == "Birthweight") next
@@ -34,7 +139,7 @@ for (i in 1:length(birthweight1)) {
 print(t(cdist_df))
 ```
 
-None of the resulting Cook's distances are sufficiently large to conclude that the points are influence points. Another potential problem to be addressed is collinearity between the explanatory variables. A preliminary investigation can be conducted by analysing the variance inflation factors (VIF) of a model including the 11 predictors.
+None of the Cook's distances are sufficiently large to conclude that the points are influence points. Another potential problem to be addressed is collinearity between the explanatory variables. A preliminary investigation can be conducted by analysing the variance inflation factors (VIF) of a model including the 11 predictors.
 ```{r warning=FALSE, message=FALSE}
 bw_model <- lm(Birthweight~., data=birthweight1); library(car); vif(bw_model)
 ```
@@ -70,7 +175,7 @@ stepdown_pi <- predict(bw_model, newdata=averages, interval="prediction", level=
 The resulting fitted value for `Birthweight` is `r stepdown_ci[,1]`. As expected, the prediction interval [`r stepdown_pi[,2]`, `r stepdown_pi[,3]`] is wider than the confidence interval [`r stepdown_ci[,2]`, `r stepdown_ci[,3]`], as it encompasses individual observations instead of observation means and thus accounts for the error in these observations as well.
 
 **d)** As an alternative to the step-down method, the LASSO method is applied to the original model to reduce the number of explanatory variables. The `cv.glmnet` function is used to select the optimal value of the tuning parameter $\lambda$ by cross-validation. Like in b), the reduction starts with the filtered data set `birthweight1`. $2/3$ of the data points are randomly sampled for training and the remaining $1/3$ is reserved for subsequent testing.
-```{r fig.height = 5.5, fig.width = 6, fig.align = "center", warning=FALSE, message=FALSE}
+```{r fig.height = 5.9, fig.width = 5.5, fig.align = "center", warning=FALSE, message=FALSE}
 library(glmnet); par(mfrow=c(2,1), mar=c(4,4,6,1)); set.seed(123)
 x_df <- birthweight1[, names(birthweight1) != 'Birthweight']
 x <- as.matrix(x_df); y <- as.double(birthweight1$Birthweight)
@@ -98,9 +203,11 @@ When observing the coefficients of the simplified model, it is noticeable that `
 library(dplyr); par(mfrow=c(1,2))
 birthweight3 <- select(birthweight, lowbwt, Gestation, smoker, mage35)
 totsmoker <- xtabs(~smoker, data=birthweight3)
-barplot(xtabs(lowbwt~smoker, data=birthweight3), xlab="Smoker", ylab="Number of Low Birthweights")
+barplot(xtabs(lowbwt~smoker, data=birthweight3), xlab="Smoker",
+        ylab="Number of Low Birthweights")
 totmage35 <- xtabs(~mage35, data=birthweight3)
-barplot(xtabs(lowbwt~mage35, data=birthweight3), xlab="Age > 35", ylab="Number of Low Birthweights")
+barplot(xtabs(lowbwt~mage35, data=birthweight3), xlab="Age > 35",
+        ylab="Number of Low Birthweights")
 tot <- xtabs(~smoker+mage35, data=birthweight3)
 totlowbwt <- xtabs(lowbwt~smoker+mage35, data=birthweight3)
 print(totsmoker); print(totmage35); print(round(totlowbwt/tot, 2))
@@ -115,11 +222,12 @@ summary(bw_logmodel)
 The summary of the model provides the coefficients needed to estimate the odds ratios for the predictors using the formula $\hat{o_k}=e^{\mu+c_1g_k+c_2s_k+c_3m_k}$, where $g_k$, $s_k$ and $m_k$ are the $k$-th observation of `Gestation`, `smoker` and `mage35`, respectively, and $c_1$, $c_2$ and $c_3$ are their coefficients. The coefficient for `Gestation` is negative, which means that the odds of a low birth weight decrease with increasing gestation period, namely by a factor $e^{-1.4633}\approx 0.231$. The coefficients for `smoker` and `mage35` are positive, which means that the odds of a low birth weight increase for smoking mothers and mothers older than 35. This happens by a factor $e^{5.4495}\approx 232.64$ for smoking mothers and by a factor $e^{0.3223}\approx 1.38$ for older mothers. This confirms the previous observations that older age and, more primarily, smoking are associated with a higher risk of low birth weight
 
 **g)** Here, we follow a similar procedure to that in f), but we include the respective interactions in the models. Then we can run an ANOVA to determine if the interaction term is significant. 
-```{r}
-bw_logmodel_int1 <- glm(lowbwt~Gestation+smoker+mage35+Gestation:smoker, data=birthweight3, family="binomial")
-bw_logmodel_int2 <- glm(lowbwt~Gestation+smoker+mage35+Gestation:mage35, data=birthweight3, family="binomial")
-anova(bw_logmodel_int1, test="Chisq")
-anova(bw_logmodel_int2, test="Chisq")
+```{r warning=FALSE}
+bw_logmodel_int1 <- glm(lowbwt~Gestation+smoker+mage35+Gestation:smoker,
+                        data=birthweight3, family="binomial")
+bw_logmodel_int2 <- glm(lowbwt~Gestation+smoker+mage35+Gestation:mage35,
+                        data=birthweight3, family="binomial")
+anova(bw_logmodel_int1, test="Chisq"); anova(bw_logmodel_int2, test="Chisq")
 ```
 We notice that, for both models where the interaction term was tested individually, neither interaction term was significant according to our ANOVA. However, both the variables `Gestation` and `smoker` are significant, and should be included in the model despite not having an interaction. In this case, we would prefer to use the model from f) and not g).  
 
@@ -128,11 +236,11 @@ par(mfrow=c(1,2))
 qqnorm(residuals(bw_logmodel_int1), main="Q-Q Plot Smoker Interact")
 qqnorm(residuals(bw_logmodel_int2), main="Q-Q Plot mage35 Interact")
 ```
+
 It is also a good idea to check our assumptions for the ANOVA test as well. We see that our model residuals are not quite linear in the Q-Q Plot, so normality is doubtful. This is further proof that using the model with interactions not well founded, and should proceed with our model from part f) with no interactions. 
 
-**h)** Our resulting model from f) will be used below to determine the probability of low birth weight for the combinations of factors with a gestation length of 40 weeks. 
+**h)** Our resulting model from f) is used below to determine the probability of low birth weight for the combinations of factors with a gestation length of 40 weeks. 
 ```{r}
-#final_logmodel <- glm(lowbwt~Gestation+smoker, data=birthweight3, family="binomial")
 combo1 = data.frame(Gestation=40, smoker=0, mage35=0)
 combo2 = data.frame(Gestation=40, smoker=1, mage35=0)
 combo3 = data.frame(Gestation=40, smoker=0, mage35=1)
@@ -142,8 +250,7 @@ plbw_combo2 = predict(bw_logmodel,combo2,type="response")
 plbw_combo3 = predict(bw_logmodel,combo3,type="response")
 plbw_combo4 = predict(bw_logmodel,combo4,type="response")
 summary_table <- matrix(c(plbw_combo1, plbw_combo3, plbw_combo2, plbw_combo4), 
-                        byrow = TRUE, 
-                        ncol = 2, 
+                        byrow = TRUE, ncol = 2, 
                         dimnames = list(c("Non-smoker", "Smoker"), 
                                         c("Under 35", "Over 35")))
 print(summary_table)
@@ -159,7 +266,6 @@ flat_table <- as.vector(grouped_df_smoker)
 matrix_data_smoker <- matrix(flat_table, nrow = prod(dims[-1]), ncol = dims[1])
 rownames(matrix_data_smoker) <- c("lowbwt=0", "lowbwt=1")
 colnames(matrix_data_smoker) <- c("smoker=0", "smoker=1")
-
 #Creating the matrix for the mage35 boolean low birthweight
 grouped_df_mage35 <- with(birthweight3, table(lowbwt, mage35))
 dims <- dim(grouped_df_mage35)
@@ -167,10 +273,66 @@ flat_table <- as.vector(grouped_df_mage35)
 matrix_data_mage35 <- matrix(flat_table, nrow = prod(dims[-1]), ncol = dims[1])
 rownames(matrix_data_mage35) <- c("lowbwt=0", "lowbwt=1")
 colnames(matrix_data_mage35) <- c("mage35=0", "mage35=1")
-
 #Conducting the two Fisher tests since we have two 2x2 matrices
 pval_smoker <- fisher.test(matrix_data_smoker)[[1]]
 pval_mage35 <-  fisher.test(matrix_data_mage35)[[1]]
 ```
 
-Since both of our p-values, `r pval_smoker`, `r pval_mage35` are above 0.05, we would not reject the null hypothesis that there is neither a dependence between smoking and low birth weight nor a dependence between `mage35` and low birth weight. There is certainly an issue with using this method. To start, we do not have at least 5 observations for each combination, which will make our test unreliable. However, the approach in general is not incorrect. One advantage to using a chi-square test is that it simplifies the problem to mere dependence vs independence between variables. However, it does not give specific coefficient variables to delinate how the probabilities of events occurring change with respect to the categorical variables, nor does it allow for continuous variables such as `Gestation` to be taken into account. 
+Since both of our p-values, `r pval_smoker`, `r pval_mage35` are above 0.05, we would not reject the null hypothesis that there is neither a dependence between smoking and low birth weight nor a dependence between `mage35` and low birth weight. Additionally, we do not have at least 5 observations for each combination, which makes the test unreliable. However, the approach in general is not incorrect. One advantage to using a chi-square test is that it simplifies the problem to mere dependence vs independence between variables. However, it does not give specific coefficient variables to delineate how the probabilities of events occurring change with respect to the categorical variables, nor does it allow for continuous variables such as `Gestation` to be taken into account.
+
+## Exercise 3. School awards
+
+**a)**
+```{r, fig.height=2.6, fig.width=3}
+#Read in the data and extract the relevant column
+awards=read.table("data/awards.txt",header=TRUE)
+#Poisson regression with program as a factor
+awards$prog=factor(awards$prog)
+awardsglm1 = glm(num_awards~prog, family=poisson, data=awards)
+drop1(awardsglm1, test="Chisq")
+summary(awardsglm1)
+```
+Upon inspection of the output from drop1, we notice that program has a significant impact on the number of awards that each student receives. By looking at the summary output of the model, we notice that program 2 ("general") has the highest associated coefficient, i.e. the probability of a student in the general program of increasing is higher for that student than in the vocational or academic programs. 
+
+```{r}
+program1 = data.frame(prog="1")
+program2 = data.frame(prog="2")
+program3 = data.frame(prog="3")
+estimated_num_awards_p1 = predict(awardsglm1,program1,type="response")
+estimated_num_awards_p2 = predict(awardsglm1,program2,type="response")
+estimated_num_awards_p3 = predict(awardsglm1,program3,type="response")
+```
+The expected number of awards for programs 1, 2, and 3 are `r round(estimated_num_awards_p1[[1]], 4)`, `r round(estimated_num_awards_p2[[1]],4)`, and `r round(estimated_num_awards_p3[[1]],4)` respectively. We notice that students in program 2 will have a higher expected number of awards, which confirms out findings from the summary of the poisson regression.
+
+**b)** Since the Kruskal-Wallis test is nonparametric, there is no assumption of normality that needs to be met for the data; hence, it is applicable in this situation. As a nonparametric alternative to ANOVA, we can apply the test to see if there is a significant difference between the distributions of awards among the different programs.
+```{r}
+kruskal.test(awards$num_awards, awards$prog)
+```
+The rest results in a significant p-value, so we can reject the null hypothesis that all of the distributions for the numbers of awards for the different programs are the same. This aligns with our findings from the poisson regression above. 
+
+**c)** First, we conduct the Poisson regression with program type, math, and their interaction to see if their interaction is significant in the model. Then, we want to conduct an ANOVA to determine if an interaction exists. It is important to check the  ANOVA model assumptions. 
+
+```{r, fig.height=3, fig.width=3}
+awardsglm2 = glm(num_awards~prog*math, family=poisson, data=awards)
+qqnorm(residuals(awardsglm2), main="Q-Q Plot Awards Residuals")
+anova(awardsglm2, test="Chisq")
+```
+The Q-Q plot looks relatively linear, so normality in the model residuals is a valid assumption. From ANOVA results, we see that the interaction between program type and math score is insignificant, so we do not need to include it in the model. However, both program and math are significant when determining the number of awards, so we will keep those variables in the model and leave out their interaction. 
+
+```{r, fig.height=2.6, fig.width=3}
+awardsglm3 = glm(num_awards~prog+math, family=poisson, data=awards)
+summary(awardsglm3)
+```
+From the summary of th results with math included as an explanatory variable, we notice that the third program ("academic") now has the highest coefficient, so it will increase the probability that a student has a higher average number of awards the most.
+
+```{r}
+options(tinytex.verbose = TRUE)
+program1 = data.frame(prog="1", math=56)
+program2 = data.frame(prog="2", math=56)
+program3 = data.frame(prog="3", math=56)
+estimated_num_awards_p1 = predict(awardsglm3,program1,type="response")
+estimated_num_awards_p2 = predict(awardsglm3,program2,type="response")
+estimated_num_awards_p3 = predict(awardsglm3,program3,type="response")
+```
+
+The expected number of awards for programs 1, 2, and 3 are `r round(estimated_num_awards_p1[[1]], 4)`, `r round(estimated_num_awards_p2[[1]], 4)`, and `r round(estimated_num_awards_p3[[1]], 4)` respectively. Here, we notice once again that the students in the academic program have the highest expected number awards when we include math scores as an explanatory variable, which aligns with the results from the summary of our model. 
