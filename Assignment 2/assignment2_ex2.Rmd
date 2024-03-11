@@ -95,9 +95,10 @@ When observing the coefficients of the simplified model, it is noticeable that `
 
 **e)** The next exercises consider a new subset of the data set: the binary variable `lowbwt`, indicating whether the newborn baby's weight is under 6 lbs, is used as a response variable, while the variables `Gestation` (gestation period), `smoker` (a binary variable indicating whether the mother is a smoker) and `mage35` (a binary variable indicating whether the mother's age is above 35) are used as predictors. A new subset of the data set is created with only the relevant contents. Two bar plots are created to illustrate the relationship between each of the binary predictors and the binary outcome.
 ```{r fig.height = 3, fig.width = 6, fig.align = "center", warning=FALSE, message=FALSE}
-library(dplyr)
+library(dplyr); par(mfrow=c(1,2))
 birthweight3 <- select(birthweight, lowbwt, Gestation, smoker, mage35)
-par(mfrow=c(1,2))
+#birthweight3$smoker <- factor(birthweight3$smoker)
+#birthweight3$mage35 <- factor(birthweight3$mage35)
 totsmoker <- xtabs(~smoker, data=birthweight3)
 barplot(xtabs(lowbwt~smoker, data=birthweight3), xlab="Smoker", ylab="Number of Low Birthweights")
 totmage35 <- xtabs(~mage35, data=birthweight3)
