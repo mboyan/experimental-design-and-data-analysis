@@ -62,7 +62,7 @@ mean_thorax_ff <- data.frame(thorax=mean_thorax, activity=levels(ff$activity))
 pred_loglongev <- predict(ff_aocv2, newdata=mean_thorax_ff)
 ```
 
-Here, we confirm again that sexual **activity** is a significant factor with p=`r round(p_activity, 4)`. We can notice its effect of decreasing longevity with increasing activity based also on our predictions for the three **activity** groups when fixing **thorax** length of the dataset to its mean. The estimated mean **loglongevities** for the three sexual **activity** groups in order are `r round(pred_loglongev[1], 4)` (*isolated*), `r round(pred_loglongev[2]` (*low*) and `r pred_loglongev[3]` (*high*). Non-log values are `r exp(pred_loglongev[1])`, `r exp(pred_loglongev[2])` and `r exp(pred_loglongev[3])`, respectively.
+Here, we confirm again that sexual **activity** is a significant factor with p=`r round(p_activity, 4)`. We can notice its effect of decreasing longevity with increasing activity based also on our predictions for the three **activity** groups when fixing **thorax** length of the dataset to its mean. The estimated mean **loglongevities** for the three sexual **activity** groups in order are `r pred_loglongev[1]` (*isolated*), `r pred_loglongev[2]` (*low*) and `r pred_loglongev[3]` (*high*).
 
 c)
 
