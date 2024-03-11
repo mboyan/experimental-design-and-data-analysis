@@ -26,9 +26,11 @@ summary(ff)
 
 ```{r, fig.width=7.2, fig.height=2.8}
 par(mfrow=c(1,3))
-hist(ff$loglongevity, main="Histogram of Log-Longevity", xlab="Log-Longevity", col="lightblue")
+hist(ff$loglongevity, main="Histogram of Log-Longevity", xlab="Log-Longevity",
+     col="lightblue")
 qqnorm(ff$loglongevity, main="Normal Q-Q Plot of Log-Longevity")
-boxplot(loglongevity ~ activity, data=ff, main="Log-Longevity by sexual acitivity", col="lightblue", xlab="Sexual activity", ylab="Log-Longevity")
+boxplot(loglongevity ~ activity, data=ff, main="Log-Longevity by sexual acitivity",
+        col="lightblue", xlab="Sexual activity", ylab="Log-Longevity")
 p_levene <- leveneTest(loglongevity ~ activity, data=ff)[1,3]
 ```
 
@@ -36,10 +38,8 @@ By inspecting the histogram, we notice that `loglongevity` is slightly right-shi
 
 ```{r, results='hide'}
 ff_aov <- lm(loglongevity ~ activity, data=ff)
-anova(ff_aov)
-summary(ff_aov)
+anova(ff_aov); summary(ff_aov)
 p_activity <- summary(ff_aov)$coefficients[2,4]
-
 loglongev_by_activity <- tapply(ff$loglongevity, ff$activity, mean)
 longev_by_activity <- exp(loglongev_by_activity)
 p_baseline_low <- summary(ff_aov)$coefficients[2,4]
@@ -51,10 +51,8 @@ The ANOVA strongly suggests that there is a statistically significant difference
 
 ```{r, results='hide'}
 ff_aocv2 <- lm(loglongevity ~ thorax + activity, data=ff)
-anova(ff_aocv2)
-summary(ff_aocv2)
+anova(ff_aocv2); summary(ff_aocv2)
 p_activity <- anova(ff_aocv2)$'Pr(>F)'[2]
-
 mean_thorax <- mean(ff$thorax)
 mean_thorax_ff <- data.frame(thorax=mean_thorax, activity=levels(ff$activity))
 pred_loglongev <- predict(ff_aocv2, newdata=mean_thorax_ff)
