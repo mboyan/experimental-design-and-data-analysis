@@ -1,0 +1,56 @@
+---
+title: "Boyan Exam Exercise"
+output: html_notebook
+---
+
+# 1. Ice cream
+
+## a)
+
+```{r fig.height=3, fig.width=8}
+ice_cream <- read.csv('data/Ice_cream.csv')
+ice_cream$ice_cream <- NULL
+
+video.mean <- mean(ice_cream$video)
+
+par(mfrow=c(1,3))
+hist(ice_cream$video)
+boxplot(ice_cream$video)
+qqnorm(ice_cream$video)
+
+shapiro.test(ice_cream$video)
+```
+
+```{r}
+# Compute 97% CI
+video.sd <- sd(ice_cream$video)
+margin <- qnorm(0.985)*video.sd/sqrt(length(ice_cream$video))
+ci.lower <- video.mean - margin
+ci.upper <- video.mean + margin
+print(paste("CI:", ci.lower, ci.upper))
+
+# Compute sample size for size 3 CI
+margin.target = 3 / 2
+n.sample <- (qnorm(0.985)*video.sd/margin.target)^2
+print(paste("Required sample size:", ceiling(n.sample)))
+
+# Compute bootstrap CI
+B=1000
+Tstar=numeric(B)
+for (i in 1:B){
+  Xstar=sample(ice_cream$video,replace=TRUE)
+  Tstar[i]=mean(Xstar)
+}
+Tstar.015 <- quantile(Tstar, 0.015)
+Tstar.985 <- quantile(Tstar, 0.985)
+print(paste("Bootstrap CI:", 2*video.mean-Tstar.985, 2*video.mean-Tstar.015))
+```
+
+## b)
+
+```{r}
+t.test(ice_cream$video, mu=50, alternative = "greater")
+
+t.test(ice_cream$video, mu=51, alternative = "greater")
+```
+
