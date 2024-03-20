@@ -54,3 +54,34 @@ t.test(ice_cream$video, mu=50, alternative = "greater")
 t.test(ice_cream$video, mu=51, alternative = "greater")
 ```
 
+## c)
+```{r}
+sum.g50 <- sum(ice_cream$video > 50)
+binom.test(sum.g50, length(ice_cream$video), p=0.5, alt="g")
+
+wilcox.test(ice_cream$video, mu=50, alt="g")
+
+sum.l42 <- sum(ice_cream$video < 42)
+binom.test(sum.l42, length(ice_cream$video), p=0.25, alt="l")
+```
+
+## d)
+```{r}
+# Bootstrap samples
+B <- 1000
+t <- min(ice_cream$video)
+n <- length(ice_cream$video)
+ps <- numeric(100)
+for (j in 0:100){
+  tstar <- numeric(B)
+  for (i in 1:B){
+    xstar <- rnorm(n, mean=j, sd=100)
+    tstar[i] <- min(xstar)
+  }
+  p.left <- sum(tstar<t)/B
+  p.right <- sum(tstar>t)/B
+  ps[j] <- 2*min(p.left, p.right)
+}
+mus <- seq(1,100)[ps > 0.05]
+```
+

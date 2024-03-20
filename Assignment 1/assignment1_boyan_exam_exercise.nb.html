@@ -1821,8 +1821,8 @@ Tstar.015 &lt;- quantile(Tstar, 0.015)
 Tstar.985 &lt;- quantile(Tstar, 0.985)
 print(paste(&quot;Bootstrap CI:&quot;, 2*video.mean-Tstar.985, 2*video.mean-Tstar.015))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiQm9vdHN0cmFwIENJOiA1MC4zNjQ1NSA1My4zMTAzXCJcbiJ9 -->
-<pre><code>[1] &quot;Bootstrap CI: 50.36455 53.3103&quot;</code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiQm9vdHN0cmFwIENJOiA1MC40Mzk5MjUgNTMuMjk1M1wiXG4ifQ== -->
+<pre><code>[1] &quot;Bootstrap CI: 50.439925 53.2953&quot;</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -1865,11 +1865,88 @@ mean of x
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+</div>
+<div id="c" class="section level2">
+<h2>c)</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtLmc1MCA8LSBzdW0oaWNlX2NyZWFtJHZpZGVvID4gNTApXG5iaW5vbS50ZXN0KHN1bS5nNTAsIGxlbmd0aChpY2VfY3JlYW0kdmlkZW8pLCBwPTAuNSwgYWx0PVwiZ1wiKVxuYGBgIn0= -->
+<pre class="r"><code>sum.g50 &lt;- sum(ice_cream$video &gt; 50)
+binom.test(sum.g50, length(ice_cream$video), p=0.5, alt=&quot;g&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5cdEV4YWN0IGJpbm9taWFsIHRlc3RcblxuZGF0YTogIHN1bS5nNTAgYW5kIGxlbmd0aChpY2VfY3JlYW0kdmlkZW8pXG5udW1iZXIgb2Ygc3VjY2Vzc2VzID0gMTA4LCBudW1iZXIgb2YgdHJpYWxzID0gMjAwLCBwLXZhbHVlID0gMC4xNDQ0XG5hbHRlcm5hdGl2ZSBoeXBvdGhlc2lzOiB0cnVlIHByb2JhYmlsaXR5IG9mIHN1Y2Nlc3MgaXMgZ3JlYXRlciB0aGFuIDAuNVxuOTUgcGVyY2VudCBjb25maWRlbmNlIGludGVydmFsOlxuIDAuNDc5Mzc3NyAxLjAwMDAwMDBcbnNhbXBsZSBlc3RpbWF0ZXM6XG5wcm9iYWJpbGl0eSBvZiBzdWNjZXNzIFxuICAgICAgICAgICAgICAgICAgMC41NCBcbiJ9 -->
+<pre><code>
+    Exact binomial test
+
+data:  sum.g50 and length(ice_cream$video)
+number of successes = 108, number of trials = 200, p-value = 0.1444
+alternative hypothesis: true probability of success is greater than 0.5
+95 percent confidence interval:
+ 0.4793777 1.0000000
+sample estimates:
+probability of success 
+                  0.54 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxud2lsY294LnRlc3QoaWNlX2NyZWFtJHZpZGVvLCBtdT01MCwgYWx0PVwiZ1wiKVxuYGBgIn0= -->
+<pre class="r"><code>wilcox.test(ice_cream$video, mu=50, alt=&quot;g&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5cdFdpbGNveG9uIHNpZ25lZCByYW5rIHRlc3Qgd2l0aCBjb250aW51aXR5IGNvcnJlY3Rpb25cblxuZGF0YTogIGljZV9jcmVhbSR2aWRlb1xuViA9IDk4MzUuNSwgcC12YWx1ZSA9IDAuMDA1MTA3XG5hbHRlcm5hdGl2ZSBoeXBvdGhlc2lzOiB0cnVlIGxvY2F0aW9uIGlzIGdyZWF0ZXIgdGhhbiA1MFxuIn0= -->
+<pre><code>
+    Wilcoxon signed rank test with continuity correction
+
+data:  ice_cream$video
+V = 9835.5, p-value = 0.005107
+alternative hypothesis: true location is greater than 50</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtLmw0MiA8LSBzdW0oaWNlX2NyZWFtJHZpZGVvIDwgNDIpXG5iaW5vbS50ZXN0KHN1bS5sNDIsIGxlbmd0aChpY2VfY3JlYW0kdmlkZW8pLCBwPTAuMjUsIGFsdD1cImxcIilcbmBgYCJ9 -->
+<pre class="r"><code>sum.l42 &lt;- sum(ice_cream$video &lt; 42)
+binom.test(sum.l42, length(ice_cream$video), p=0.25, alt=&quot;l&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5cdEV4YWN0IGJpbm9taWFsIHRlc3RcblxuZGF0YTogIHN1bS5sNDIgYW5kIGxlbmd0aChpY2VfY3JlYW0kdmlkZW8pXG5udW1iZXIgb2Ygc3VjY2Vzc2VzID0gMzEsIG51bWJlciBvZiB0cmlhbHMgPSAyMDAsIHAtdmFsdWUgPSAwLjAwMDc4OTFcbmFsdGVybmF0aXZlIGh5cG90aGVzaXM6IHRydWUgcHJvYmFiaWxpdHkgb2Ygc3VjY2VzcyBpcyBsZXNzIHRoYW4gMC4yNVxuOTUgcGVyY2VudCBjb25maWRlbmNlIGludGVydmFsOlxuIDAuMDAwMDAwMCAwLjIwMzQwNTRcbnNhbXBsZSBlc3RpbWF0ZXM6XG5wcm9iYWJpbGl0eSBvZiBzdWNjZXNzIFxuICAgICAgICAgICAgICAgICAwLjE1NSBcbiJ9 -->
+<pre><code>
+    Exact binomial test
+
+data:  sum.l42 and length(ice_cream$video)
+number of successes = 31, number of trials = 200, p-value = 0.0007891
+alternative hypothesis: true probability of success is less than 0.25
+95 percent confidence interval:
+ 0.0000000 0.2034054
+sample estimates:
+probability of success 
+                 0.155 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="d" class="section level2">
+<h2>d)</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBCb290c3RyYXAgc2FtcGxlc1xuQiA8LSAxMDAwXG50IDwtIG1pbihpY2VfY3JlYW0kdmlkZW8pXG5uIDwtIGxlbmd0aChpY2VfY3JlYW0kdmlkZW8pXG5wcyA8LSBudW1lcmljKDEwMClcbmZvciAoaiBpbiAwOjEwMCl7XG4gIHRzdGFyIDwtIG51bWVyaWMoQilcbiAgZm9yIChpIGluIDE6Qil7XG4gICAgeHN0YXIgPC0gcm5vcm0obiwgbWVhbj1qLCBzZD0xMDApXG4gICAgdHN0YXJbaV0gPC0gbWluKHhzdGFyKVxuICB9XG4gIHAubGVmdCA8LSBzdW0odHN0YXI8dCkvQlxuICBwLnJpZ2h0IDwtIHN1bSh0c3Rhcj50KS9CXG4gIHBzW2pdIDwtIDIqbWluKHAubGVmdCwgcC5yaWdodClcbn1cbm11cyA8LSBzZXEoMSwxMDApW3BzID4gMC4wNV1cbmBgYCJ9 -->
+<pre class="r"><code># Bootstrap samples
+B &lt;- 1000
+t &lt;- min(ice_cream$video)
+n &lt;- length(ice_cream$video)
+ps &lt;- numeric(100)
+for (j in 0:100){
+  tstar &lt;- numeric(B)
+  for (i in 1:B){
+    xstar &lt;- rnorm(n, mean=j, sd=100)
+    tstar[i] &lt;- min(xstar)
+  }
+  p.left &lt;- sum(tstar&lt;t)/B
+  p.right &lt;- sum(tstar&gt;t)/B
+  ps[j] &lt;- 2*min(p.left, p.right)
+}
+mus &lt;- seq(1,100)[ps &gt; 0.05]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkJveWFuIEV4YW0gRXhlcmNpc2UiDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIDEuIEljZSBjcmVhbQ0KDQojIyBhKQ0KDQpgYGB7ciBmaWcuaGVpZ2h0PTMsIGZpZy53aWR0aD04fQ0KaWNlX2NyZWFtIDwtIHJlYWQuY3N2KCdkYXRhL0ljZV9jcmVhbS5jc3YnKQ0KaWNlX2NyZWFtJGljZV9jcmVhbSA8LSBOVUxMDQoNCnZpZGVvLm1lYW4gPC0gbWVhbihpY2VfY3JlYW0kdmlkZW8pDQoNCnBhcihtZnJvdz1jKDEsMykpDQpoaXN0KGljZV9jcmVhbSR2aWRlbykNCmJveHBsb3QoaWNlX2NyZWFtJHZpZGVvKQ0KcXFub3JtKGljZV9jcmVhbSR2aWRlbykNCg0Kc2hhcGlyby50ZXN0KGljZV9jcmVhbSR2aWRlbykNCmBgYA0KDQpgYGB7cn0NCiMgQ29tcHV0ZSA5NyUgQ0kNCnZpZGVvLnNkIDwtIHNkKGljZV9jcmVhbSR2aWRlbykNCm1hcmdpbiA8LSBxbm9ybSgwLjk4NSkqdmlkZW8uc2Qvc3FydChsZW5ndGgoaWNlX2NyZWFtJHZpZGVvKSkNCmNpLmxvd2VyIDwtIHZpZGVvLm1lYW4gLSBtYXJnaW4NCmNpLnVwcGVyIDwtIHZpZGVvLm1lYW4gKyBtYXJnaW4NCnByaW50KHBhc3RlKCJDSToiLCBjaS5sb3dlciwgY2kudXBwZXIpKQ0KDQojIENvbXB1dGUgc2FtcGxlIHNpemUgZm9yIHNpemUgMyBDSQ0KbWFyZ2luLnRhcmdldCA9IDMgLyAyDQpuLnNhbXBsZSA8LSAocW5vcm0oMC45ODUpKnZpZGVvLnNkL21hcmdpbi50YXJnZXQpXjINCnByaW50KHBhc3RlKCJSZXF1aXJlZCBzYW1wbGUgc2l6ZToiLCBjZWlsaW5nKG4uc2FtcGxlKSkpDQoNCiMgQ29tcHV0ZSBib290c3RyYXAgQ0kNCkI9MTAwMA0KVHN0YXI9bnVtZXJpYyhCKQ0KZm9yIChpIGluIDE6Qil7DQogIFhzdGFyPXNhbXBsZShpY2VfY3JlYW0kdmlkZW8scmVwbGFjZT1UUlVFKQ0KICBUc3RhcltpXT1tZWFuKFhzdGFyKQ0KfQ0KVHN0YXIuMDE1IDwtIHF1YW50aWxlKFRzdGFyLCAwLjAxNSkNClRzdGFyLjk4NSA8LSBxdWFudGlsZShUc3RhciwgMC45ODUpDQpwcmludChwYXN0ZSgiQm9vdHN0cmFwIENJOiIsIDIqdmlkZW8ubWVhbi1Uc3Rhci45ODUsIDIqdmlkZW8ubWVhbi1Uc3Rhci4wMTUpKQ0KYGBgDQoNCiMjIGIpDQoNCmBgYHtyfQ0KdC50ZXN0KGljZV9jcmVhbSR2aWRlbywgbXU9NTAsIGFsdGVybmF0aXZlID0gImdyZWF0ZXIiKQ0KDQp0LnRlc3QoaWNlX2NyZWFtJHZpZGVvLCBtdT01MSwgYWx0ZXJuYXRpdmUgPSAiZ3JlYXRlciIpDQpgYGANCg0K</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkJveWFuIEV4YW0gRXhlcmNpc2UiDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIDEuIEljZSBjcmVhbQ0KDQojIyBhKQ0KDQpgYGB7ciBmaWcuaGVpZ2h0PTMsIGZpZy53aWR0aD04fQ0KaWNlX2NyZWFtIDwtIHJlYWQuY3N2KCdkYXRhL0ljZV9jcmVhbS5jc3YnKQ0KaWNlX2NyZWFtJGljZV9jcmVhbSA8LSBOVUxMDQoNCnZpZGVvLm1lYW4gPC0gbWVhbihpY2VfY3JlYW0kdmlkZW8pDQoNCnBhcihtZnJvdz1jKDEsMykpDQpoaXN0KGljZV9jcmVhbSR2aWRlbykNCmJveHBsb3QoaWNlX2NyZWFtJHZpZGVvKQ0KcXFub3JtKGljZV9jcmVhbSR2aWRlbykNCg0Kc2hhcGlyby50ZXN0KGljZV9jcmVhbSR2aWRlbykNCmBgYA0KDQpgYGB7cn0NCiMgQ29tcHV0ZSA5NyUgQ0kNCnZpZGVvLnNkIDwtIHNkKGljZV9jcmVhbSR2aWRlbykNCm1hcmdpbiA8LSBxbm9ybSgwLjk4NSkqdmlkZW8uc2Qvc3FydChsZW5ndGgoaWNlX2NyZWFtJHZpZGVvKSkNCmNpLmxvd2VyIDwtIHZpZGVvLm1lYW4gLSBtYXJnaW4NCmNpLnVwcGVyIDwtIHZpZGVvLm1lYW4gKyBtYXJnaW4NCnByaW50KHBhc3RlKCJDSToiLCBjaS5sb3dlciwgY2kudXBwZXIpKQ0KDQojIENvbXB1dGUgc2FtcGxlIHNpemUgZm9yIHNpemUgMyBDSQ0KbWFyZ2luLnRhcmdldCA9IDMgLyAyDQpuLnNhbXBsZSA8LSAocW5vcm0oMC45ODUpKnZpZGVvLnNkL21hcmdpbi50YXJnZXQpXjINCnByaW50KHBhc3RlKCJSZXF1aXJlZCBzYW1wbGUgc2l6ZToiLCBjZWlsaW5nKG4uc2FtcGxlKSkpDQoNCiMgQ29tcHV0ZSBib290c3RyYXAgQ0kNCkI9MTAwMA0KVHN0YXI9bnVtZXJpYyhCKQ0KZm9yIChpIGluIDE6Qil7DQogIFhzdGFyPXNhbXBsZShpY2VfY3JlYW0kdmlkZW8scmVwbGFjZT1UUlVFKQ0KICBUc3RhcltpXT1tZWFuKFhzdGFyKQ0KfQ0KVHN0YXIuMDE1IDwtIHF1YW50aWxlKFRzdGFyLCAwLjAxNSkNClRzdGFyLjk4NSA8LSBxdWFudGlsZShUc3RhciwgMC45ODUpDQpwcmludChwYXN0ZSgiQm9vdHN0cmFwIENJOiIsIDIqdmlkZW8ubWVhbi1Uc3Rhci45ODUsIDIqdmlkZW8ubWVhbi1Uc3Rhci4wMTUpKQ0KYGBgDQoNCiMjIGIpDQoNCmBgYHtyfQ0KdC50ZXN0KGljZV9jcmVhbSR2aWRlbywgbXU9NTAsIGFsdGVybmF0aXZlID0gImdyZWF0ZXIiKQ0KDQp0LnRlc3QoaWNlX2NyZWFtJHZpZGVvLCBtdT01MSwgYWx0ZXJuYXRpdmUgPSAiZ3JlYXRlciIpDQpgYGANCg0KIyMgYykNCmBgYHtyfQ0Kc3VtLmc1MCA8LSBzdW0oaWNlX2NyZWFtJHZpZGVvID4gNTApDQpiaW5vbS50ZXN0KHN1bS5nNTAsIGxlbmd0aChpY2VfY3JlYW0kdmlkZW8pLCBwPTAuNSwgYWx0PSJnIikNCg0Kd2lsY294LnRlc3QoaWNlX2NyZWFtJHZpZGVvLCBtdT01MCwgYWx0PSJnIikNCg0Kc3VtLmw0MiA8LSBzdW0oaWNlX2NyZWFtJHZpZGVvIDwgNDIpDQpiaW5vbS50ZXN0KHN1bS5sNDIsIGxlbmd0aChpY2VfY3JlYW0kdmlkZW8pLCBwPTAuMjUsIGFsdD0ibCIpDQpgYGANCg0KIyMgZCkNCmBgYHtyfQ0KIyBCb290c3RyYXAgc2FtcGxlcw0KQiA8LSAxMDAwDQp0IDwtIG1pbihpY2VfY3JlYW0kdmlkZW8pDQpuIDwtIGxlbmd0aChpY2VfY3JlYW0kdmlkZW8pDQpwcyA8LSBudW1lcmljKDEwMCkNCmZvciAoaiBpbiAwOjEwMCl7DQogIHRzdGFyIDwtIG51bWVyaWMoQikNCiAgZm9yIChpIGluIDE6Qil7DQogICAgeHN0YXIgPC0gcm5vcm0obiwgbWVhbj1qLCBzZD0xMDApDQogICAgdHN0YXJbaV0gPC0gbWluKHhzdGFyKQ0KICB9DQogIHAubGVmdCA8LSBzdW0odHN0YXI8dCkvQg0KICBwLnJpZ2h0IDwtIHN1bSh0c3Rhcj50KS9CDQogIHBzW2pdIDwtIDIqbWluKHAubGVmdCwgcC5yaWdodCkNCn0NCm11cyA8LSBzZXEoMSwxMDApW3BzID4gMC4wNV0NCmBgYA0KDQo=</div>
 
 
 
