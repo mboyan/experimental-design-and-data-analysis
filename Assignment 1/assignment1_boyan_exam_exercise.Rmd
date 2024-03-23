@@ -126,7 +126,45 @@ cor.test(ice_cream$video, ice_cream$puzzle, method = "spearman")
 
 # 2. Sour cream
 ```{r}
-cream <- read.table("data/cream.txt")
+cream <- read.csv("data/cream.txt", sep="", header=TRUE)
+cream$batch <- factor(cream$batch)
+cream$position <- factor(cream$position)
+cream$starter <- factor(cream$starter)
+```
 
+## a)
+```{r}
+contrasts(cream$starter) <- contr.sum
+contrasts(cream$batch) <- contr.sum
+contrasts(cream$position) <- contr.sum
+model <- lm(acidity~starter+batch+position, data=cream)
+anova(model)
+summary(model)
+```
+## b)
+```{r}
+xtabs(acidity~starter+batch, data=cream)
+interaction.plot(cream$batch, cream$starter, cream$acidity)
+```
+```{r}
+model2 <- lm(acidity~starter+batch, data=cream)
+summary(model2)
+qqnorm(residuals(model2))
+```
+
+## c)
+
+```{r}
+friedman.test(cream$acidity, cream$starter, cream$batch)
+```
+
+## d)
+
+```{r}
+library(lme4)
+creamlmer <- lmer(acidity~starter+(1|batch), data=cream, REML=FALSE)
+summary(creamlmer)
+creamlmenr1 <- lmer(acidity~(1|batch), data=cream, REML=FALSE)
+anova(creamlmenr1, creamlmer)
 ```
 

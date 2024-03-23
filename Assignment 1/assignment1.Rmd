@@ -322,7 +322,7 @@ plot(fitted(creamaov_fixed_sum), residuals(creamaov_fixed_sum)); title("Residual
 
 anova(creamaov_fixed_sum); summary(creamaov_fixed_sum)
 ```
-After passing the somewhat skewed but still rather normallt distribution in the Q-Q plot, using this model in the ANOVA analysis we find that coefficients for **starter3** and **starter4** substantiate a very significant effect on *acidity* with confidence level below $\alpha^{***} = 0.001$. To further substantiate our results, we will use the algorithmic step function and compare if its resulting model is consistent with our manual assessment.
+After passing the somewhat skewed but still rather normal distribution in the Q-Q plot, using this model in the ANOVA analysis we find that coefficients for **starter3** and **starter4** substantiate a very significant effect on *acidity* with confidence level below $\alpha^{***} = 0.001$. To further substantiate our results, we will use the algorithmic step function and compare if its resulting model is consistent with our manual assessment.
 
 ```{r, fig.height=3.2, fig.width=6, results='hide', fig.align = "center"}
 creamaov_sum_auto <- step(creamaov_sum)

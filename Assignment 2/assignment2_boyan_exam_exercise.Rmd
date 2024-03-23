@@ -1,0 +1,41 @@
+---
+title: "Boyan Exam Exercise"
+output: html_notebook
+---
+
+# 1. Fruit flies
+
+```{r}
+flies <- read.csv("data/fruitflies.txt", sep="", header = TRUE)
+flies$loglongevity <- log(flies$longevity)
+
+par(mfrow=c(1,2))
+hist(flies$loglongevity)
+plot(flies$thorax, flies$loglongevity)
+
+par(mfrow=c(1,3))
+boxplot(flies$loglongevity[flies$activity=="isolated"])
+boxplot(flies$loglongevity[flies$activity=="low"])
+boxplot(flies$loglongevity[flies$activity=="high"])
+```
+
+```{r}
+model <- lm(loglongevity~activity, data=flies)
+anova(model)
+aov_summary <- summary(model)
+print(aov_summary)
+```
+```{r}
+loglongev_act_means <- tapply(flies$loglongevity, flies$activity, mean)
+longev_act_means <- exp(loglongev_act_means)
+
+loglongev_act_estimates <- aov_summary$coefficients[,1]
+loglongev_act_estimates[2:3] <- loglongev_act_estimates[1] + loglongev_act_estimates[2:3]
+```
+
+## b)
+
+```{r}
+
+```
+
