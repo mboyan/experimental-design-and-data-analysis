@@ -8,6 +8,7 @@ output: html_notebook
 ```{r}
 flies <- read.csv("data/fruitflies.txt", sep="", header = TRUE)
 flies$loglongevity <- log(flies$longevity)
+flies$activity <- factor(flies$activity, levels = c("isolated","low","high"))
 
 par(mfrow=c(1,2))
 hist(flies$loglongevity)
@@ -36,6 +37,102 @@ loglongev_act_estimates[2:3] <- loglongev_act_estimates[1] + loglongev_act_estim
 ## b)
 
 ```{r}
+model2 <- lm(loglongevity~thorax+activity, data=flies)
+anova(model2)
+print('--------')
+m2.summary <- summary(model2)
+print(m2.summary)
+print('--------')
+drop1(model2, test='F')
+print('--------')
+model3 <- lm(loglongevity~thorax, data=flies)
+anova(model2, model3)
 
+par(mfrow=c(1,2))
+qqnorm(residuals(model2))
+plot(fitted(model2), residuals(model2))
+
+thorax.mean <- mean(flies$thorax)
+coeffs <- m2.summary$coefficients
+coeffs.est <- coeffs[rownames(coeffs) %in% c(paste0('activity', levels(flies$activity)), '(Intercept)'),1]
+coeffs.est[2:3] <- coeffs.est[1] + coeffs.est[2:3]
+
+thorax.mean.df <- data.frame(thorax=thorax.mean, activity<-levels(flies$activity))
+loglong.est <- predict(model2, newdata = thorax.mean.df)
+longev.est <- exp(loglong.est)
+```
+
+## c)
+
+```{r}
+plot(loglongevity~thorax, pch=unclass(activity), data=flies)
+for (i in seq(1:length(levels(flies$activity)))){
+  alevel <- levels(flies$activity)[i]
+  abline(lm(loglongevity~thorax, data=flies[flies$activity==alevel,]),
+                                          col=c('blue','orange','green')[i])
+}
+
+model4 <- lm(loglongevity~activity*thorax, data=flies)
+anova(model4)
+```
+## e)
+```{r}
+model5 <- lm(longevity~thorax+activity, data=flies)
+anova(model5)
+summary(model5)
+par(mfrow=c(1,2))
+qqnorm(residuals(model5))
+plot(fitted(model5),residuals(model5))
+shapiro.test(residuals(model5))
+```
+
+# 3. School awards
+
+```{r}
+awards <- read.csv("data/awards.txt", sep='', header=TRUE)
+awards$prog <- factor(awards$prog)
+awards$num_awards <- as.numeric(awards$num_awards)
+```
+
+## a)
+
+```{r}
+pmodel <- glm(num_awards~prog, data=awards, family=poisson)
+print(pmodel)
+print('=================')
+anova(pmodel)
+print('=================')
+drop1(pmodel, test="Chisq")
+print('=================')
+pmod.summary <- summary(pmodel)
+print(pmod.summary)
+
+coeffs <- pmod.summary$coefficients[,1]
+intercept <- coeffs[1]
+coeffs[1] <- 0
+estimates <- exp(intercept + coeffs)
+estimates.compare <- tapply(awards$num_awards, awards$prog, mean)
+```
+
+## b)
+```{r}
+kruskal.test(awards$num_awards, awards$prog)
+```
+
+## c)
+```{r}
+pmodel2 <- glm(num_awards~math+prog+math:prog, data=awards, family = poisson)
+pmodel3 <- glm(num_awards~math+prog, data=awards, family = poisson)
+anova(pmodel2, test="Chisq")
+print('=================')
+drop1(pmodel2, test="Chisq")
+print('=================')
+anova(pmodel2, pmodel3, test="Chisq")
+print('=================')
+summary(pmodel2)
+print('=================')
+summary(pmodel3)
+
+awards.predict <- predict(pmodel3, newdata=data.frame(prog=c("1", "2", "3"), math=56), type='response')
 ```
 
